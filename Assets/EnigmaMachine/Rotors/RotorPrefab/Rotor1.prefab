@@ -76,7 +76,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2408643315133646633}
   - component: {fileID: 1313961417469095666}
-  - component: {fileID: 6392652058600281949}
   - component: {fileID: 451084191228418922}
   m_Layer: 0
   m_Name: SwappingPoint
@@ -119,20 +118,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0, y: 7, z: 7}
+  m_Size: {x: 3, y: 7, z: 7}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6392652058600281949
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2948715601352002149}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 164f970a0a308064dbef42e735698a94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &451084191228418922
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -159,7 +146,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!1 &5088240816656248561
 GameObject:
   m_ObjectHideFlags: 0
@@ -582,8 +569,10 @@ MonoBehaviour:
   RotorPositionLifted: {fileID: 4677747558475631714}
   RotorPositionSwappingTop: {fileID: 9050932481114495982}
   RotorPositionStationary: {fileID: 6684899561259214950}
+  RotorBarrierRight: {fileID: 0}
+  RotorBarrierLeft: {fileID: 0}
   rotorSwappingCollider: {fileID: 1313961417469095666}
-  transitionSpeed: 0.5
+  transitionSpeed: 8
 --- !u!114 &9022877519445883478
 MonoBehaviour:
   m_ObjectHideFlags: 0

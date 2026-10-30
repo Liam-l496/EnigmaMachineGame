@@ -137,33 +137,6 @@ public class GameManagerScript : MonoBehaviour
         // rotorSelected2 = null;
     }
 
-    public void SwapPosition(RotorSwappingScript movingRotor, RotorSwappingScript stationaryRotor)
-    {
-        RotorMasterScript rotorMaster1 = movingRotor.rotorMasterScript;
-        RotorMasterScript rotorMaster2 = stationaryRotor.rotorMasterScript;
-
-        Transform tempPositionLifted = stationaryRotor.RotorPositionLifted;
-        Transform tempSwappingTop = stationaryRotor.RotorPositionSwappingTop;
-        Transform tempStationaryPos = stationaryRotor.RotorPositionStationary;
-        int tempRotorPosition = rotorMaster2.rotorPosition;
-
-        stationaryRotor.RotorPositionLifted = movingRotor.RotorPositionLifted;
-        stationaryRotor.RotorPositionSwappingTop = movingRotor.RotorPositionSwappingTop;
-        stationaryRotor.RotorPositionStationary = movingRotor.RotorPositionStationary;
-        rotorMaster2.rotorPosition = rotorMaster1.rotorPosition;
-
-        movingRotor.RotorPositionLifted = tempPositionLifted;
-        movingRotor.RotorPositionSwappingTop = tempSwappingTop;
-        movingRotor.RotorPositionStationary = tempStationaryPos;
-        rotorMaster1.rotorPosition = tempRotorPosition;
-
-        AssignRotorPlace(rotorMaster2);
-        AssignRotorPlace(rotorMaster1);
-
-        // stationaryRotor.MoveRotor(stationaryRotor.RotorPositionLifted);
-        stationaryRotor.DisableRotorSwappingCollider();
-        stationaryRotor.RotorStationaryPosition();
-    }
     public void AssignRotorPlace(RotorMasterScript rotor) {
         if (rotor.rotorPosition == 1)
         {
@@ -177,6 +150,23 @@ public class GameManagerScript : MonoBehaviour
         {
             rotor3 = rotor;
         }
+    }
+
+    public RotorMasterScript ReturnRotor(int rotorPosition)
+    {
+        if (rotorPosition == 1)
+        {
+            return rotor1;
+        }
+        else if (rotorPosition == 2)
+        {
+            return rotor2;
+        }
+        else if (rotorPosition == 3)
+        {
+            return rotor3;
+        }
+        return null;
     }
 
     public int FindEncryptedText(string keyPressed)

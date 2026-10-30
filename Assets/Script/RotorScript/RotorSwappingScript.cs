@@ -16,6 +16,8 @@ public class RotorSwappingScript : MonoBehaviour
     public Transform RotorPositionLifted;
     public Transform RotorPositionSwappingTop;
     public Transform RotorPositionStationary;
+    public Transform RotorBarrierRight;
+    public Transform RotorBarrierLeft;
     public BoxCollider rotorSwappingCollider;
 
     [Header("Moving Speed")]
@@ -26,8 +28,8 @@ public class RotorSwappingScript : MonoBehaviour
         rotorMasterScript = GetComponent<RotorMasterScript>();
         print("rotorMasterScript swapping" + rotorMasterScript);
         interactable = GetComponent<Interactable>();
+        DisableRotorSwappingCollider();
     }
-
 
     void LateUpdate()
     {
@@ -35,41 +37,47 @@ public class RotorSwappingScript : MonoBehaviour
         {
             return;
         }
-        EnableRotorSwappingCollider();
-        if(!rotorMasterScript.ReflectorHolding)
+
+        if (!rotorMasterScript.ReflectorHolding)
         {
             if (Input.GetMouseButtonDown(0) && rotorMasterScript.IsSelected)
             {
-                // print("MOUSE DOWN");
-                // First click on Rotor
                 UpdateSelectedForSwapping(true);
                 mousePositionSwappingBefore = Input.mousePosition;
             }
+
             if (Input.GetMouseButton(0) && selectedForSwapping)
             {
-                // print("MOUSE HODLING");
-                // When rotor is being dragged around
                 mousePositionSwappingAfter = Input.mousePosition;
-                Vector3 newPosition = new Vector3(transform.position.x - ((mousePositionSwappingAfter.x - mousePositionSwappingBefore.x)*4f), transform.position.y, transform.position.z);
+
+                float mouseDeltaX = (mousePositionSwappingAfter.x - mousePositionSwappingBefore.x) * 4f;
+
+                float targetX = transform.position.x - mouseDeltaX;
+
+                float minX = Mathf.Min(RotorBarrierLeft.position.x, RotorBarrierRight.position.x);
+                float maxX = Mathf.Max(RotorBarrierLeft.position.x, RotorBarrierRight.position.x);
+
+                float clampedX = Mathf.Clamp(targetX, minX, maxX);
+
+                Vector3 newPosition = new Vector3(clampedX, transform.position.y, transform.position.z);
+
                 transform.position = Vector3.Lerp(
                     transform.position,
                     newPosition,
                     transitionSpeed * Time.deltaTime
                 );
+
                 mousePositionSwappingBefore = mousePositionSwappingAfter;
-                // print("HOLDING isSelected: " + isSelected + "     selectedForSwapping" + selectedForSwapping + "    ROtor NUMBEr: " + rotorNumber);
             }
+
             if (!Input.GetMouseButton(0) && selectedForSwapping)
             {
-                // print("MPUSE UP");
-                // Rotor is let go
-                // print("ROTOR LET GO    ROTOR NUMBER" + rotorNumber );
                 rotorMasterScript.IsSelected = false;
                 UpdateSelectedForSwapping(false);
             }
+
             return;
         }
-        // print("REFLECTOR HOLDING");
     }
 
     public void UpdateSelectedForSwapping(bool newState)
@@ -81,11 +89,13 @@ public class RotorSwappingScript : MonoBehaviour
         }
         selectedForSwapping = newState;
         if (newState)
-        {
+        {   
+            EnableRotorSwappingCollider();
             RotorSwappablePosition();
         }
         else
         {
+            DisableRotorSwappingCollider();
             RotorStationaryPosition();
         }
     }
@@ -102,18 +112,18 @@ public class RotorSwappingScript : MonoBehaviour
         rotorMasterScript.UpdateEndPosition(RotorPositionLifted);
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (!rotorMasterScript.IsSelected) return;
-        Debug.Log("Collided with a trigger object");
-        if(other.CompareTag("RotorSwappingPoint"))
-        {
-            print("COllided with rotor swapping point");
-            Transform swappingPoint = other.GetComponent<Transform>();
-            RotorSwappingScript swappingRotor = swappingPoint.parent.gameObject.GetComponent<RotorSwappingScript>();
-            if (rotorMasterScript.rotorScript != swappingRotor) GameManagerScript.Instance.SwapPosition(this, swappingRotor);
-        }
-    }
+    // void OnTriggerEnter(Collider other)
+    // {
+    //     if (!rotorMasterScript.IsSelected) return;
+    //     Debug.Log("Collided with a trigger object");
+    //     if(other.CompareTag("RotorSwappingPoint"))
+    //     {
+    //         print("COllided with rotor swapping point");
+    //         Transform swappingPoint = other.GetComponent<Transform>();
+    //         RotorSwappingScript swappingRotor = swappingPoint.parent.gameObject.GetComponent<RotorSwappingScript>();
+    //         if (rotorMasterScript.rotorScript != swappingRotor) GameManagerScript.Instance.SwapPosition(this, swappingRotor);
+    //     }
+    // }
 
     public void RotorSwappingAnimationState(bool reflectorHolding)
     {
