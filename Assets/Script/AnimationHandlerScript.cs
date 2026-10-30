@@ -8,6 +8,11 @@ using System;
 public class AnimationHandlerScript : MonoBehaviour
 {
 
+    [Header("Cinemachine")]
+    [SerializeField] CinemachineBrain brain;
+    public static bool IsBlending { get; private set; }
+    public static event Action<bool> OnBlendStateChanged;
+
     [Header("Virtual Camera Script")]
     [SerializeField] VirtualCameraScript virtualCamera;
 
@@ -27,6 +32,7 @@ public class AnimationHandlerScript : MonoBehaviour
     private int hashPowerLever;
     private int hashWindowFlap;
 
+    public static event Action<bool> WindowFlapUp;
     public static event Action<bool> BlackCoverFlapUp;
 
     [Header("Reflector")]
@@ -63,6 +69,24 @@ public class AnimationHandlerScript : MonoBehaviour
         // hashActuatorBar = Animator.StringToHash("");
     }
 
+    void Update()
+    {
+        UpdateColliderWoodenBox();
+        UpdateColliderBlackCoverFlap();
+        UpdateColliderReflector();
+        UpdateColliderBatteryBox();
+
+        if (brain == null) return;
+
+        bool currentlyBlending = brain.IsBlending;
+
+        // Check if the state changed this frame
+        if (currentlyBlending != IsBlending)
+        {
+            IsBlending = currentlyBlending;
+            OnBlendStateChanged?.Invoke(IsBlending);
+        }
+    }
 
     /// <summary>
     ///  Wooden Box Functions
@@ -129,10 +153,12 @@ public class AnimationHandlerScript : MonoBehaviour
         if (animatorBlackFlapCover.GetBool(hashWindowFlap))
         {
             virtualCamera.ActivateCameraRotorWindow();
+            WindowFlapUp?.Invoke(true);
         }
         else
         {
             virtualCamera.ActivateCameraOverall();
+            WindowFlapUp?.Invoke(false);
         }
     }
     private void UpdateColliderBlackCoverFlap()
@@ -193,13 +219,5 @@ public class AnimationHandlerScript : MonoBehaviour
         {
             virtualCamera.ActivateCameraOverall();
         }
-    }
-
-    void Update()
-    {
-        UpdateColliderWoodenBox();
-        UpdateColliderBlackCoverFlap();
-        UpdateColliderReflector();
-        UpdateColliderBatteryBox();
     }
 }

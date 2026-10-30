@@ -12,19 +12,32 @@ public class Interactable : MonoBehaviour
     public UnityEvent onInteraction;
     public UnityEvent onStopInteraction;
 
+    public float minDistance = 1f;
+    public float maxDistance = 10f;
+
+    public bool isSelected = false;
+    public bool runInitialScript = false;
+    public bool runEndingScript = false;
+
     public bool canPickUp = false;
     public bool currentlyPickedUp = false;
+    public bool clickedAgain = false;
     // Start is called before the first frame update
-    void Start()
+
+    void Awake()
     {
         outline = gameObject.AddComponent<Outline>();
         gameObject.tag = "Interactable";
-        DisableOutline();
+        DisableOutline();   
+    }
+    void Start()
+    {
     }
 
     public void Interact()
     {
         onInteraction.Invoke();
+        isSelected = true;
     }
 
     public void StopInteract()
@@ -53,4 +66,8 @@ public class Interactable : MonoBehaviour
         // GetComponent<BoxCollider>().enabled = !newState;
     }
 
+    public void UpdateClickedAgain(bool newState)
+    {
+        clickedAgain = newState;
+    }
 }

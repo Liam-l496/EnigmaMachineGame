@@ -16,14 +16,14 @@ public class GameManagerScript : MonoBehaviour
 
     private string sentenceTyped = "";
     [Header("Rotors Swapping")]
-    private RotorScript rotorSelected1;
-    private RotorScript rotorSelected2; 
+    private RotorMasterScript rotorSelected1;
+    private RotorMasterScript rotorSelected2; 
     // private bool swapping = false;
 
     [Header("Rotors")]
-    [SerializeField] RotorScript rotor1;
-    [SerializeField] RotorScript rotor2;
-    [SerializeField] RotorScript rotor3;
+    [SerializeField] RotorMasterScript rotor1;
+    [SerializeField] RotorMasterScript rotor2;
+    [SerializeField] RotorMasterScript rotor3;
     [SerializeField] int notchRequired = 10;
     bool spinRotor2 = false;
     bool spinRotor3 = false;
@@ -58,20 +58,20 @@ public class GameManagerScript : MonoBehaviour
 
     public void SpinRotor()
     {
-        spinRotor2 = false;
-        spinRotor3 = false;
-        if (rotor1.notch == (rotor1.rotorValue-1))
-        {
-            spinRotor2 = true;
-        }
-        if (rotor2.notch == (rotor2.rotorValue-1))
-        {
-            spinRotor2 = true;
-            spinRotor3 = true;
-        }
-        rotor1.SpinRotorOnce();
-        if(spinRotor2) rotor2.SpinRotorOnce();
-        if(spinRotor3) rotor3.SpinRotorOnce();
+        // spinRotor2 = false;
+        // spinRotor3 = false;
+        // if (rotor1.notch == (rotor1.rotorValue-1))
+        // {
+        //     spinRotor2 = true;
+        // }
+        // if (rotor2.notch == (rotor2.rotorValue-1))
+        // {
+        //     spinRotor2 = true;
+        //     spinRotor3 = true;
+        // }
+        // rotor1.SpinRotorOnce();
+        // if(spinRotor2) rotor2.SpinRotorOnce();
+        // if(spinRotor3) rotor3.SpinRotorOnce();
 
     }
 
@@ -93,19 +93,19 @@ public class GameManagerScript : MonoBehaviour
         return ActuatorBarScript.AnimationState.OneRotate;
     }
 
-    public ActuatorBarScript.AnimationState ActuatorBarReleaseState()
-    {
-        if (rotor1.notchPosition == notchRequired)
-        {
-            return ActuatorBarScript.AnimationState.OneTwoRelease;
-        }
-        else if (rotor2.notchPosition == notchRequired)
-        {
-            return ActuatorBarScript.AnimationState.OneTwoThreeRelease;
-        }
-        return ActuatorBarScript.AnimationState.OneRelease;
+    // public ActuatorBarScript.AnimationState ActuatorBarReleaseState()
+    // {
+    //     // if (rotor1.notchPosition == notchRequired)
+    //     // {
+    //     //     return ActuatorBarScript.AnimationState.OneTwoRelease;
+    //     // }
+    //     // else if (rotor2.notchPosition == notchRequired)
+    //     // {
+    //     //     return ActuatorBarScript.AnimationState.OneTwoThreeRelease;
+    //     // }
+    //     // return ActuatorBarScript.AnimationState.OneRelease;
         
-    }
+    // }
 
     public void KeyPress(string keyPressed)
     {
@@ -123,53 +123,57 @@ public class GameManagerScript : MonoBehaviour
 
     public void KeyRelease()
     {
-        ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
-        print(state);
-        actuatorBar.AnimateActuatorBarRelease(state);
+        // ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
+        // print(state);
+        // actuatorBar.AnimateActuatorBarRelease(state);
     }
 
     public void ClearRotorSelected()
     {
-        if (rotorSelected1 != null) rotorSelected1.selectedForSwapping = false;
-        if (rotorSelected2 != null) rotorSelected2.selectedForSwapping = false;
+        // if (rotorSelected1 != null) rotorSelected1.selectedForSwapping = false;
+        // if (rotorSelected2 != null) rotorSelected2.selectedForSwapping = false;
 
-        rotorSelected1 = null;
-        rotorSelected2 = null;
+        // rotorSelected1 = null;
+        // rotorSelected2 = null;
     }
 
-    public void SwapPosition(RotorScript movingRotor, RotorScript stationaryRotor)
+    public void SwapPosition(RotorSwappingScript movingRotor, RotorSwappingScript stationaryRotor)
     {
+        RotorMasterScript rotorMaster1 = movingRotor.rotorMasterScript;
+        RotorMasterScript rotorMaster2 = stationaryRotor.rotorMasterScript;
+
         Transform tempPositionLifted = stationaryRotor.RotorPositionLifted;
         Transform tempSwappingTop = stationaryRotor.RotorPositionSwappingTop;
         Transform tempStationaryPos = stationaryRotor.RotorPositionStationary;
-        int tempRotorPlace = stationaryRotor.rotorPlace;
+        int tempRotorPosition = rotorMaster2.rotorPosition;
 
         stationaryRotor.RotorPositionLifted = movingRotor.RotorPositionLifted;
         stationaryRotor.RotorPositionSwappingTop = movingRotor.RotorPositionSwappingTop;
         stationaryRotor.RotorPositionStationary = movingRotor.RotorPositionStationary;
-        stationaryRotor.rotorPlace = movingRotor.rotorPlace;
+        rotorMaster2.rotorPosition = rotorMaster1.rotorPosition;
 
         movingRotor.RotorPositionLifted = tempPositionLifted;
         movingRotor.RotorPositionSwappingTop = tempSwappingTop;
         movingRotor.RotorPositionStationary = tempStationaryPos;
-        movingRotor.rotorPlace = tempRotorPlace;
+        rotorMaster1.rotorPosition = tempRotorPosition;
 
-        AssignRotorPlace(stationaryRotor);
-        AssignRotorPlace(movingRotor);
+        AssignRotorPlace(rotorMaster2);
+        AssignRotorPlace(rotorMaster1);
 
         // stationaryRotor.MoveRotor(stationaryRotor.RotorPositionLifted);
+        stationaryRotor.DisableRotorSwappingCollider();
         stationaryRotor.RotorStationaryPosition();
     }
-    public void AssignRotorPlace(RotorScript rotor) {
-        if (rotor.rotorPlace == 1)
+    public void AssignRotorPlace(RotorMasterScript rotor) {
+        if (rotor.rotorPosition == 1)
         {
             rotor1 = rotor;
         }
-        else if(rotor.rotorPlace == 2)
+        else if(rotor.rotorPosition == 2)
         {
             rotor2 = rotor;
         }
-        else if (rotor.rotorPlace == 3)
+        else if (rotor.rotorPosition == 3)
         {
             rotor3 = rotor;
         }
@@ -187,33 +191,34 @@ public class GameManagerScript : MonoBehaviour
         // int pass7 = rotor1.CipherToPlain(pass6);
         // print("PLAIN TEXT: " + plainChar + "    CIPHER TEXT:    " + pass7);
         
-        int plainChar = keyPressed[0] - 'A';
-        print("Key Pressed: " + (char)(plainChar + 'A') + " (" + plainChar + ")");
+        // int plainChar = keyPressed[0] - 'A';
+        // print("Key Pressed: " + (char)(plainChar + 'A') + " (" + plainChar + ")");
 
-        int pass1 = rotor1.PlainToCipher(plainChar);
-        print("Pass 1 (Rotor 1 Forward): " + (char)(pass1 + 'A') + " (" + pass1 + ")");
+        // int pass1 = rotor1.PlainToCipher(plainChar);
+        // print("Pass 1 (Rotor 1 Forward): " + (char)(pass1 + 'A') + " (" + pass1 + ")");
 
-        int pass2 = rotor2.PlainToCipher(pass1);
-        print("Pass 2 (Rotor 2 Forward): " + (char)(pass2 + 'A') + " (" + pass2 + ")");
+        // int pass2 = rotor2.PlainToCipher(pass1);
+        // print("Pass 2 (Rotor 2 Forward): " + (char)(pass2 + 'A') + " (" + pass2 + ")");
 
-        int pass3 = rotor3.PlainToCipher(pass2);
-        print("Pass 3 (Rotor 3 Forward): " + (char)(pass3 + 'A') + " (" + pass3 + ")");
+        // int pass3 = rotor3.PlainToCipher(pass2);
+        // print("Pass 3 (Rotor 3 Forward): " + (char)(pass3 + 'A') + " (" + pass3 + ")");
 
-        int pass4 = Reflector[pass3];
-        print("Pass 4 (Reflector):       " + (char)(pass4 + 'A') + " (" + pass4 + ")");
+        // int pass4 = Reflector[pass3];
+        // print("Pass 4 (Reflector):       " + (char)(pass4 + 'A') + " (" + pass4 + ")");
 
-        int pass5 = rotor3.CipherToPlain(pass4);
-        print("Pass 5 (Rotor 3 Reverse): " + (char)(pass5 + 'A') + " (" + pass5 + ")");
+        // int pass5 = rotor3.CipherToPlain(pass4);
+        // print("Pass 5 (Rotor 3 Reverse): " + (char)(pass5 + 'A') + " (" + pass5 + ")");
 
-        int pass6 = rotor2.CipherToPlain(pass5);
-        print("Pass 6 (Rotor 2 Reverse): " + (char)(pass6 + 'A') + " (" + pass6 + ")");
+        // int pass6 = rotor2.CipherToPlain(pass5);
+        // print("Pass 6 (Rotor 2 Reverse): " + (char)(pass6 + 'A') + " (" + pass6 + ")");
 
-        int pass7 = rotor1.CipherToPlain(pass6);
-        print("Pass 7 (Rotor 1 Reverse): " + (char)(pass7 + 'A') + " (" + pass7 + ")");
+        // int pass7 = rotor1.CipherToPlain(pass6);
+        // print("Pass 7 (Rotor 1 Reverse): " + (char)(pass7 + 'A') + " (" + pass7 + ")");
 
-        print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A'));
+        // print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A'));
         
-        return pass7;
+        // return pass7;
+        return 0;
     }
 
     public Dictionary<int, int> Reflector = new Dictionary<int, int>()
