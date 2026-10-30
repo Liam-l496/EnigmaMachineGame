@@ -36,6 +36,19 @@ public class PlayerPickUpScript : MonoBehaviour
     private float minDistance = 100.0f;
     private float maxDistance = 2000.0f;
 
+    [Header("Player Interaction Connection Variables")]
+    private PlayerInteraction playerInteraction;
+
+    public bool somethingElseClicked = false;
+    public Interactable anotherInteractableClicked;
+
+
+    void Start()
+    {
+        playerInteraction = GetComponent<PlayerInteraction>();
+    }
+
+
     void Update()
     {
         if (inAnimation)
@@ -43,6 +56,15 @@ public class PlayerPickUpScript : MonoBehaviour
             ObjectAnimation(animationEndPosition);
         }
         if (!heldObject) return;
+
+        if (somethingElseClicked)
+        {
+            playerInteraction.mouseClick = true;
+            playerInteraction.currentInteractable = anotherInteractableClicked;
+            somethingElseClicked = false;
+            playerInteraction.setByPlayerPickUpScript = true;
+            PutDownObject();
+        }
 
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         if (scrollInput != 0) ZoomObject(scrollInput);

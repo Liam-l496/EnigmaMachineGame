@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,7 +12,10 @@ public class PlayerInteraction : MonoBehaviour
 
     public float playerReach = 1000f;
     private Camera mainCamera;
+    public Interactable previousInteractable;
     public Interactable currentInteractable;
+    public bool setByPlayerPickUpScript = false;
+    public bool mouseClick = false;
 
     [Header("PlayerPickUpScripts")]
     [SerializeField] PlayerPickUpScript playerPickUpScript;
@@ -45,63 +49,68 @@ public class PlayerInteraction : MonoBehaviour
             // print("IN ANIMATION");
             return;
         }
-
-        if (currentInteractable == null || currentInteractable != null && !currentInteractable.currentlyPickedUp) {
-            // Holding nothings
-            // Interacting but not been picked up
-            print("CHECKING INTERACTION");
-            // Updates what is currently highlighted and not
-            CheckInteraction();
+        // If Player Pick Up Script did not say anything
+        if (!setByPlayerPickUpScript) {
+            currentInteractable = CurrentInteractableSelected();
+            CheckSameInteractable();
+            previousInteractable = currentInteractable;
+            mouseClick = Input.GetMouseButtonDown(0);
+        }
+        else
+        {
+            setByPlayerPickUpScript = false;
         }
 
-        if (Input.GetMouseButtonDown(0) && currentInteractable != null)
-        // Click on what is currently highlighted
+        // If mouse held down and object picked up, then rotate
+        if (Input.GetMouseButton(0) && playerPickUpScript.heldObject != null)
         {
-            if (currentInteractable.canPickUp && !currentInteractable.currentlyPickedUp)
-            // Logic for picking things up
-            // Need to be on pickUp boolean + currently not picked up
-            // Need a state for putting it down
-                // When clicking elsewhere
-            {
-                // print("STATE 1");
-                playerPickUpScript.PickUpObject(currentInteractable);
-            }
-            else if (currentInteractable.canPickUp && currentInteractable.currentlyPickedUp)
-            {
-                // print("STATE 2");
-                // Put down the object
-                // Already picked up
-                Interactable currentlyInteracting = CurrentInteractableSelected();
-
-                if (currentlyInteracting != playerPickUpScript.heldObject)
-                {
-                    // print("STATE 2.1");
-                    // Only put down when the object is not looked at and clicked
-                    playerPickUpScript.PutDownObject();
-                }
-                else
-                {
-                    // print("STATE 2.2");
-                    // Logic for interacting with same object
-                    playerPickUpScript.ClickSameObject();
-                }
-            }
-            else {
-                // Object cannot be picked up but just interacted
-                // print("INTERACTING STATE 3");
-                currentInteractable.Interact();
-            }
-        }
-        else if (Input.GetMouseButton(0) && playerPickUpScript.heldObject != null)
-        {
-            // print("STATE 4");
             playerPickUpScript.RotateObject();
         }
-        else if (currentInteractable != null)
+
+        // No mouse input, then return
+        if (!mouseClick) return;
+
+        // If nothing looked at, then put down object and return
+        if (currentInteractable == null)
         {
-            // print("STATE 5");
-            currentInteractable.StopInteract();
+            if (playerPickUpScript.heldObject) playerPickUpScript.PutDownObject();
+            return;
         }
+        // If no object held and object can be picked up, then pick up
+        if (!playerPickUpScript.heldObject && currentInteractable.canPickUp)
+        {
+            playerPickUpScript.PickUpObject(currentInteractable);
+        }
+
+        // If same object clicked
+        else if (currentInteractable == playerPickUpScript.heldObject)
+        {
+            playerPickUpScript.ClickSameObject();
+        }
+
+        // If something else interactable clicked, then let another script decide outcome
+        else if (currentInteractable != playerPickUpScript.heldObject && playerPickUpScript.heldObject)
+        {
+            playerPickUpScript.somethingElseClicked = true;
+            playerPickUpScript.anotherInteractableClicked = currentInteractable;
+        }
+
+        // If something cannot be picked up but interacted
+        else if (!currentInteractable.canPickUp)
+        {
+            print("INTERACTING");
+            currentInteractable.Interact();
+        }
+    }
+
+    private void CheckSameInteractable()
+    {
+        if (previousInteractable == currentInteractable)
+        {
+            return;   
+        }
+        if (previousInteractable) previousInteractable.DisableOutline();
+        if (currentInteractable) currentInteractable.EnableOutline();
     }
 
     private Interactable GetParent(Interactable currentlyInteracting)
@@ -111,39 +120,6 @@ public class PlayerInteraction : MonoBehaviour
             return currentlyInteracting.transform.parent.GetComponent<Interactable>();
         }
         return null;
-    }
-
-    private void CheckInteraction()
-    {
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-        // Draws a 10-unit line in the Scene view while running
-        Debug.DrawRay(ray.origin, ray.direction * playerReach, Color.red);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, playerReach))
-        {
-            // Debug.Log($"Ray hit object: {hit.collider.gameObject.name} with Tag: {hit.collider.tag}");
-
-            if (hit.collider.CompareTag("Interactable"))
-            {
-                Interactable newInteractable = hit.collider.GetComponent<Interactable>();
-
-                if (newInteractable != null && newInteractable.enabled)
-                {
-                    if (currentInteractable != newInteractable)
-                    {
-                        DisableCurrentInteractable();
-                        SetNewCurrentInteractable(newInteractable);
-                    }
-                    return;
-                }
-                else
-                {
-                    // Debug.LogWarning("Hit object with 'Interactable' tag, but missing the Interactable script!");
-                }
-            }
-        }
-        DisableCurrentInteractable();
     }
 
     private Interactable CurrentInteractableSelected()
@@ -165,20 +141,4 @@ public class PlayerInteraction : MonoBehaviour
         }
         return null;
     } 
-
-    void SetNewCurrentInteractable(Interactable newInteractable)
-    {
-        currentInteractable = newInteractable;
-        currentInteractable.EnableOutline();
-    }
-
-    void DisableCurrentInteractable()
-    {
-        if (currentInteractable)
-        {
-            currentInteractable.DisableOutline();
-            currentInteractable = null;
-        }
-    }
-
 }
