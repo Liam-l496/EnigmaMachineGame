@@ -1037,6 +1037,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &160693249
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1694,6 +1696,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &343412803
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3530,6 +3534,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &929502964
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4201,6 +4207,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &1051546913
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4531,6 +4539,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &1317102818
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5604,6 +5614,7 @@ GameObject:
   - component: {fileID: 1561577796}
   - component: {fileID: 1561577795}
   - component: {fileID: 1561577794}
+  - component: {fileID: 1561577798}
   m_Layer: 0
   m_Name: LampTestingCylinder
   m_TagString: Untagged
@@ -5652,6 +5663,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!136 &1561577795
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5725,6 +5738,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1561577792}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1561577798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561577792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14e1abc2f0923dc47b5f49d7b3510224, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1565511583 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b057206511f1c9047ad9bccfedc11a2f,
@@ -5783,7 +5808,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerReach: 1000
+  previousInteractable: {fileID: 0}
   currentInteractable: {fileID: 0}
+  setByPlayerPickUpScript: 0
+  mouseClick: 0
+  maxDragDistance: 5
   playerPickUpScript: {fileID: 0}
 --- !u!4 &1588970963
 Transform:
@@ -5819,6 +5848,8 @@ MonoBehaviour:
   smoothTime: 0.1
   smoothTimeRotation: 10
   scrollSpeed: 2
+  somethingElseClicked: 0
+  anotherInteractableClicked: {fileID: 0}
 --- !u!1 &1608648126 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c6efb7118e139b4aa3cbc6199548541,
@@ -5884,6 +5915,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!4 &1648121400 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 74e75b8f19d293f458e48fa3b54475bd,
@@ -6221,6 +6254,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &1789854816
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6395,6 +6430,8 @@ MonoBehaviour:
   canPickUp: 1
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!114 &1839177364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7165,6 +7202,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &2010042347
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11649,6 +11688,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!1 &6512510688109312626
 GameObject:
   m_ObjectHideFlags: 0
@@ -13122,6 +13163,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!1 &8298779334845525930
 GameObject:
   m_ObjectHideFlags: 0
@@ -13196,6 +13239,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &8320834491687398364
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13783,6 +13828,8 @@ MonoBehaviour:
   canPickUp: 0
   currentlyPickedUp: 0
   clickedAgain: 0
+  anotherInteractableClicked: {fileID: 0}
+  wrongObjectClicked: 0
 --- !u!65 &8852352054290567860
 BoxCollider:
   m_ObjectHideFlags: 0

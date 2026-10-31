@@ -21,7 +21,6 @@ public class Interactable : MonoBehaviour
 
     public bool canPickUp = false;
     public bool currentlyPickedUp = false;
-    public bool clickedAgain = false;
     // Start is called before the first frame update
 
     void Awake()
@@ -64,10 +63,5 @@ public class Interactable : MonoBehaviour
     {
         currentlyPickedUp = newState;
         // GetComponent<BoxCollider>().enabled = !newState;
-    }
-
-    public void UpdateClickedAgain(bool newState)
-    {
-        clickedAgain = newState;
     }
 }

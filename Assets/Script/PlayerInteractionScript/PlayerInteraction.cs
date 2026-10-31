@@ -16,6 +16,8 @@ public class PlayerInteraction : MonoBehaviour
     public Interactable currentInteractable;
     public bool setByPlayerPickUpScript = false;
     public bool mouseClick = false;
+    private Vector2? mouseClickPosition; 
+    public float maxDragDistance = 5f;
 
     [Header("PlayerPickUpScripts")]
     [SerializeField] PlayerPickUpScript playerPickUpScript;
@@ -67,6 +69,18 @@ public class PlayerInteraction : MonoBehaviour
             playerPickUpScript.RotateObject();
         }
 
+        // If mouse released after clicking on same object
+        if (Input.GetMouseButtonUp(0) && mouseClickPosition != null)
+        {
+            Vector2 currentMousePos = Input.mousePosition;
+            // Only allow interaction when the mouse is not too far away
+            if (Vector2.Distance(mouseClickPosition.Value, currentMousePos) < maxDragDistance)
+            {
+                playerPickUpScript.ClickSameObject();
+            }
+            mouseClickPosition = null;
+        }
+
         // No mouse input, then return
         if (!mouseClick) return;
 
@@ -82,10 +96,10 @@ public class PlayerInteraction : MonoBehaviour
             playerPickUpScript.PickUpObject(currentInteractable);
         }
 
-        // If same object clicked
+        // If same object clicked, wait for clicking off
         else if (currentInteractable == playerPickUpScript.heldObject)
         {
-            playerPickUpScript.ClickSameObject();
+            mouseClickPosition = Input.mousePosition;
         }
 
         // If something else interactable clicked, then let another script decide outcome
@@ -105,6 +119,7 @@ public class PlayerInteraction : MonoBehaviour
 
     private void CheckSameInteractable()
     {
+        print("PREVIOUS: " + previousInteractable + "     CURRENT: " + currentInteractable);
         if (previousInteractable == currentInteractable)
         {
             return;   

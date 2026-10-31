@@ -8,10 +8,12 @@ using UnityEngine.UIElements;
 public class PlayerPickUpScript : MonoBehaviour
 {
 
+    public static PlayerPickUpScript Instance;
+
 
 
     [Header("Hold Position")]
-    [SerializeField] Transform holdPosition;
+    public Transform holdPosition;
     private Vector3 originalHeldPosition; 
     private Transform heldObjectTransform; //rigidbody of object we pick up
     private Quaternion originalHeldRotation;
@@ -42,6 +44,22 @@ public class PlayerPickUpScript : MonoBehaviour
     public bool somethingElseClicked = false;
     public Interactable anotherInteractableClicked;
 
+    [Header("Interactable COnnection Variables")]
+    public bool sameObjectClicked = false;
+    public bool wrongObjectClicked = false;
+    public bool skipUpdate = false;
+
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
@@ -53,25 +71,43 @@ public class PlayerPickUpScript : MonoBehaviour
     {
         if (inAnimation)
         {
+            print("IN ANIMATINO");
             ObjectAnimation(animationEndPosition);
         }
-        if (!heldObject) return;
-
-        if (somethingElseClicked)
-        {
-            playerInteraction.mouseClick = true;
-            playerInteraction.currentInteractable = anotherInteractableClicked;
-            somethingElseClicked = false;
-            playerInteraction.setByPlayerPickUpScript = true;
-            PutDownObject();
+        else if (!heldObject) {
+            heldObjectTransform = null;
+            return;
         }
+        if (skipUpdate) 
+        { 
+            print("SKIP UPDATE + " + skipUpdate);  
+            return;
+        }
+        print("WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
 
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         if (scrollInput != 0) ZoomObject(scrollInput);
     }
 
+    void LateUpdate()
+    {
+        print("LATE UPDATE WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
+        if (somethingElseClicked && wrongObjectClicked)
+        {
+            print("SOMETHING ELSE CLICKED + " + somethingElseClicked);
+            playerInteraction.mouseClick = true;
+            playerInteraction.currentInteractable = anotherInteractableClicked;
+            anotherInteractableClicked = null;
+            somethingElseClicked = false;
+            playerInteraction.setByPlayerPickUpScript = true;
+            PutDownObject();
+            wrongObjectClicked = false;
+        }
+    }
+
     public void ObjectAnimation(Vector3 endPosition)
     {
+        print("HELD OBJECT TRANSFORM + " + heldObjectTransform);
         heldObjectTransform.position = Vector3.SmoothDamp(
             heldObjectTransform.position,
             endPosition,
@@ -87,6 +123,7 @@ public class PlayerPickUpScript : MonoBehaviour
 
         float distance = Vector3.Distance(heldObjectTransform.position, endPosition);
         float angle = Quaternion.Angle(heldObjectTransform.rotation, originalHeldRotation);
+        print("distance = " + distance + "    stoppingdistance = " + stoppingDistance + "   rotation = " + angle);
         if (distance <= stoppingDistance && angle <= 0.5f)
         {
             // Snap to exact target position
@@ -96,11 +133,6 @@ public class PlayerPickUpScript : MonoBehaviour
             // Reset velocity and stop processing
             currentVelocity = Vector3.zero;
             inAnimation = false;
-        }
-        if (!inAnimation && endPosition != holdPosition.position)
-        {
-            heldObject = null;
-            heldObjectTransform = null;
         }
     }
 
@@ -123,6 +155,8 @@ public class PlayerPickUpScript : MonoBehaviour
 
             minDistance = heldObject.minDistance;
             maxDistance = heldObject.maxDistance;
+
+            wrongObjectClicked = false;
         }
 
     public void PutDownObject()
@@ -132,12 +166,14 @@ public class PlayerPickUpScript : MonoBehaviour
         {
             return;
         }
-        heldObject.UpdateClickedAgain(false);
+        print("PUTTING DOWN OBJECT");
         heldObject.UpdatePickUpState(false);
         heldObject.isSelected = false;
         heldObject.runEndingScript = true;
         animationEndPosition = originalHeldPosition;
+        heldObject = null;
         inAnimation = true;
+        wrongObjectClicked = false;
     }
 
     public void RotateObject()
@@ -156,8 +192,7 @@ public class PlayerPickUpScript : MonoBehaviour
 
     public void ClickSameObject()
     {
-        heldObject.UpdateClickedAgain(!heldObject.clickedAgain);
-        print("Same Object clicked again + " + heldObject.clickedAgain);
+        sameObjectClicked = true;
     }
 
     public void ZoomObject(float scrollInput)
@@ -170,4 +205,18 @@ public class PlayerPickUpScript : MonoBehaviour
         heldObject.transform.position = camTransform.position + (camTransform.forward * currentDistance);
     }
 
+    public void UpdateEndPosition(Transform newPosition)
+    {
+        animationEndPosition = newPosition.position;
+        inAnimation = true;
+    }
+
+    public void PutAnotherInteractableDown()
+    {
+        somethingElseClicked = false;
+        sameObjectClicked = false;
+        wrongObjectClicked = false;
+        anotherInteractableClicked = null;
+
+    }
 }
