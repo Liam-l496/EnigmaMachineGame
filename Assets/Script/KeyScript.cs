@@ -26,6 +26,7 @@ public class KeyScript : MonoBehaviour
     [SerializeField] GameObject lampBulbPlane;
     private Renderer lampBulbRenderer;
     private bool lightOn = false;
+    public bool lightOnGameManager = false;
     private bool blackFlapUp = false;
     [SerializeField] GameObject lampBulbObject;
     private Renderer lampBulbObjectRenderer;
@@ -68,11 +69,6 @@ public class KeyScript : MonoBehaviour
                 GameManagerScript.Instance.KeyPress(keyPress);
                 spinRotorBool = true;
             }
-            // if (!lightOn && !blackFlapUp)
-            // {
-            //     LampOn();
-            //     lightOn = true;
-            // }
         }
         else
         {
@@ -81,14 +77,8 @@ public class KeyScript : MonoBehaviour
             {
                 GameManagerScript.Instance.KeyRelease();
             }
-            // if (lightOn)
-            // {
-            //     LampOff();
-            //     lightOn = false;
-            // }
             spinRotorBool = false;
         }
-        LampSwitch(keyInput);
     }
 
     public void Pressing()
@@ -110,7 +100,54 @@ public class KeyScript : MonoBehaviour
         mousePressingKey = false;
     }
 
-    public void LampSwitch(bool keyPress)
+    // public void LampSwitch(bool keyPress)
+    // {
+    //     if (!GameManagerScript.Instance.powerOn)
+    //     // If power off
+    //     {
+    //         if (lightOn)
+    //         // If light is on when power off, then turn it off
+    //         {
+    //             LampOffPlane();
+    //         }
+    //         return;
+    //     }
+    //     else if (keyPress || mousePressingKey)
+    //     {
+    //         // if key pressed while power on
+    //         if (!lightOn)
+    //         {
+    //             // if black flap is down, then light up plane
+    //             if (!blackFlapUp) LampOnPlane();
+    //             // LampOnBulb();
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // if nothing pressed
+    //         if (lightOn)
+    //         {
+    //             // If light still on, then turn it off
+    //             LampOffPlane();
+    //             // LampOffBulb();
+    //         }
+    //     }
+    // }
+
+
+    public void LampOn()
+    {   
+        LampOnPlane();
+    }
+
+
+    public void LampOff()
+    {
+        LampOffPlane();
+    }
+
+
+    public void LampSwitch()
     {
         if (!GameManagerScript.Instance.powerOn)
         // If power off
@@ -122,25 +159,19 @@ public class KeyScript : MonoBehaviour
             }
             return;
         }
-        else if (keyPress || mousePressingKey)
-        {
             // if key pressed while power on
-            if (!lightOn)
-            {
-                // if black flap is down, then light up plane
-                if (!blackFlapUp) LampOnPlane();
-                LampOnBulb();
-            }
-        }
-        else
+        if (!lightOn)
         {
-            // if nothing pressed
-            if (lightOn)
-            {
-                // If light still on, then turn it off
-                LampOffPlane();
-                LampOffBulb();
-            }
+            // if black flap is down, then light up plane
+            if (!blackFlapUp) LampOnPlane();
+            // LampOnBulb();
+        }
+        // if nothing pressed
+        if (lightOn)
+        {
+            // If light still on, then turn it off
+            LampOffPlane();
+            // LampOffBulb();
         }
     }
 

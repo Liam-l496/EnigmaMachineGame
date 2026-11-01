@@ -19,41 +19,91 @@ public class RotorEncryptionScript : MonoBehaviour
     public Dictionary<int, int> dictionaryEntry = new Dictionary<int, int>();
     public Dictionary<int, int> dictionaryExit = new Dictionary<int, int>();
 
-    public void PopulateDictionary()
+    private int[] forwardMap = new int[26];
+    private int[] reverseMap = new int[26];
+
+    void Start()
     {
-        int normalLetter = 0;
-        foreach (char c in wiring)
+        PopulateWiring();
+        notch = notchChar - 'A' + 1;
+    }
+
+    // public void PopulateDictionary()
+    // {
+    //     int normalLetter = 0;
+    //     foreach (char c in wiring)
+    //     {
+    //         int exit = c - 'A';
+    //         dictionaryEntry.Add(normalLetter, exit);
+    //         dictionaryExit.Add(exit, normalLetter);
+    //         normalLetter += 1;
+    //     }
+    // }
+
+    // public int PlainToCipher(int plainValue, int rotorValue)
+    // {
+    //     int shift = rotorValue - 1;
+        
+    //     int pinIn = (plainValue + shift) % 26;
+        
+    //     int pinOut = dictionaryEntry[pinIn];
+        
+    //     int cipherValue = (pinOut - shift + 26) % 26;
+        
+    //     return cipherValue;
+    // } 
+
+    // public int CipherToPlain(int cipherValue, int rotorValue)
+    // {
+    //     int shift = rotorValue - 1;
+        
+    //     int pinIn = (cipherValue + shift) % 26;
+        
+    //     int pinOut = dictionaryExit[pinIn];
+        
+    //     int plainValue = (pinOut - shift + 26) % 26;
+        
+    //     return plainValue;
+    // }
+
+public void PopulateWiring()
+    {
+        wiring = wiring.ToUpper();
+        for (int i = 0; i < 26; i++)
         {
-            int exit = c - 'A';
-            dictionaryEntry.Add(normalLetter, exit);
-            dictionaryExit.Add(exit, normalLetter);
-            normalLetter += 1;
+            int mappedChar = wiring[i] - 'A';
+            forwardMap[i] = mappedChar;
+            reverseMap[mappedChar] = i;
         }
     }
 
+    private int Mod26(int value)
+    {
+        return (value % 26 + 26) % 26;
+    }
+
+    /// <summary>
+    /// Signal passing forward (Right to Left towards Reflector)
+    /// </summary>
     public int PlainToCipher(int plainValue, int rotorValue)
     {
         int shift = rotorValue - 1;
-        
-        int pinIn = (plainValue + shift) % 26;
-        
-        int pinOut = dictionaryEntry[pinIn];
-        
-        int cipherValue = (pinOut - shift + 26) % 26;
-        
-        return cipherValue;
+        int pinIn = Mod26(plainValue + shift);
+        int pinOut = forwardMap[pinIn];
+        return Mod26(pinOut - shift);
     } 
 
+    /// <summary>
+    /// Signal passing backward (Left to Right from Reflector)
+    /// </summary>
     public int CipherToPlain(int cipherValue, int rotorValue)
     {
         int shift = rotorValue - 1;
-        
-        int pinIn = (cipherValue + shift) % 26;
-        
-        int pinOut = dictionaryExit[pinIn];
-        
-        int plainValue = (pinOut - shift + 26) % 26;
-        
-        return plainValue;
+        int pinIn = Mod26(cipherValue + shift);
+        int pinOut = reverseMap[pinIn];
+        return Mod26(pinOut - shift);
     }
+
+
+
 }

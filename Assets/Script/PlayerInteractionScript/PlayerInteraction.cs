@@ -112,14 +112,14 @@ public class PlayerInteraction : MonoBehaviour
         // If something cannot be picked up but interacted
         else if (!currentInteractable.canPickUp)
         {
-            print("INTERACTING");
+            // print("INTERACTING");
             currentInteractable.Interact();
         }
     }
 
     private void CheckSameInteractable()
     {
-        print("PREVIOUS: " + previousInteractable + "     CURRENT: " + currentInteractable);
+        // print("PREVIOUS: " + previousInteractable + "     CURRENT: " + currentInteractable);
         if (previousInteractable == currentInteractable)
         {
             return;   

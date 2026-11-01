@@ -18,7 +18,6 @@ public class RotorScript : MonoBehaviour
     [SerializeField] Vector3 rotationDirection = new Vector3(-1, 0, 0);
 
     public int rotorValue = 1;
-    public int notchPosition = 10;
 
     public float maxYCoordinate;
 
@@ -131,28 +130,54 @@ public class RotorScript : MonoBehaviour
         transform.Rotate(rotateSpeed * rotationDirection * Time.deltaTime);
     }
 
+    // public void UpdateRotorValue()
+    // {
+    //     Transform ahead = numberLocationArray[(rotorValue) % 26];
+    //     Transform current = numberLocationArray[(rotorValue - 1) % 26];
+    //     Transform behind = numberLocationArray[(rotorValue - 2) < 0 ? 25 : rotorValue - 2];
+
+    //     if (ahead.position.y >= highestYCoordinate)
+    //     {
+    //         highestYCoordinate = ahead.position.y;
+    //         rotorValue = (rotorValue % 26) + 1;
+    //     }
+    //     else if (behind.position.y >= highestYCoordinate)
+    //     {
+    //         highestYCoordinate = behind.position.y;
+    //         rotorValue = (rotorValue - 2) < 0 ? 26 : rotorValue - 1;
+    //     }
+    //     else
+    //     {
+    //         highestYCoordinate = current.position.y;
+    //     }
+    // }
+
     public void UpdateRotorValue()
     {
-        Transform ahead = numberLocationArray[(rotorValue) % 26];
-        Transform current = numberLocationArray[(rotorValue - 1) % 26];
-        Transform behind = numberLocationArray[(rotorValue - 2) < 0 ? 25 : rotorValue - 2];
+        // Map 1-based rotorValue to 0-based array indices cleanly
+        Transform ahead = numberLocationArray[SafeMod(rotorValue, 26)];
+        Transform current = numberLocationArray[SafeMod(rotorValue - 1, 26)];
+        Transform behind = numberLocationArray[SafeMod(rotorValue - 2, 26)];
 
         if (ahead.position.y >= highestYCoordinate)
         {
             highestYCoordinate = ahead.position.y;
-            rotorValue = (rotorValue % 26) + 1;
-            notchPosition = (notchPosition % 26) + 1;
+            rotorValue = SafeMod(rotorValue, 26) + 1; // Always wraps within 1..26
         }
         else if (behind.position.y >= highestYCoordinate)
         {
             highestYCoordinate = behind.position.y;
-            rotorValue = (rotorValue - 2) < 0 ? 26 : rotorValue - 1;
-            notchPosition = (notchPosition - 2) < 0 ? 26 : notchPosition - 1;
+            rotorValue = SafeMod(rotorValue - 2, 26) + 1; // Always wraps within 1..26
         }
         else
         {
             highestYCoordinate = current.position.y;
         }
+    }
+
+    private int SafeMod(int n, int m)
+    {
+        return (n % m + m) % m;
     }
 
     public int IncrementRotorValue()
@@ -161,11 +186,6 @@ public class RotorScript : MonoBehaviour
         if (rotorValue > 26 || rotorValue <= 0)
         {
             rotorValue = 1;
-        }
-        notchPosition = notchPosition + 1;
-        if (notchPosition > 26 || notchPosition <= 0)
-        {
-            notchPosition = 1;
         }
         return rotorValue;
     }

@@ -1,97 +1,288 @@
-using System.Collections;
+
+
 using System.Collections.Generic;
-using Cinemachine;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlugBoardPlugSocketScript : MonoBehaviour
 {
-
     [Header("Text")]
-    [SerializeField] TextMeshPro textObject;
-    [SerializeField] char plugBoardText;
-    [SerializeField] Transform plugInPosition;
-    [SerializeField] Transform plugOutPosition;
+    [SerializeField] private TextMeshPro textObject;
+    [SerializeField] private char plugBoardText;
+
+    [Header("Plug Positions")]
+    [SerializeField] private Transform plugInPosition;
+    public Vector3 plugOutPosition;
+
+    [Header("Plug Information")]
     public PlugBoardPlugScript plugObject;
 
+    [Header("Collider")]
+    [SerializeField] private BoxCollider socketCollider;
 
     private Outline socketOutline;
 
 
-    // Start is called before the first frame update
-    void Start()
+    // --------------------------------------------------
+    // SOCKET REGISTRY
+    // --------------------------------------------------
+
+    private static readonly List<PlugBoardPlugSocketScript> allSockets =
+        new List<PlugBoardPlugSocketScript>();
+
+    private readonly Dictionary<PlugBoardPlugScript, HashSet<Collider>>
+        overlappingPlugs =
+            new Dictionary<PlugBoardPlugScript, HashSet<Collider>>();
+
+
+    // --------------------------------------------------
+    // INITIALISATION
+    // --------------------------------------------------
+
+    private void Awake()
+    {
+        if (socketCollider == null)
+        {
+            socketCollider = GetComponent<BoxCollider>();
+        }
+
+        if (socketCollider != null)
+        {
+            socketCollider.isTrigger = true;
+        }
+
+        socketOutline = GetComponent<Outline>();
+
+        if (socketOutline == null)
+        {
+            socketOutline = gameObject.AddComponent<Outline>();
+        }
+
+        socketOutline.enabled = false;
+    }
+
+    private void OnEnable()
+    {
+        if (!allSockets.Contains(this))
+        {
+            allSockets.Add(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        allSockets.Remove(this);
+
+        overlappingPlugs.Clear();
+
+        DisableOutline();
+    }
+
+    private void Start()
     {
         if (plugBoardText == '\0')
         {
             plugBoardText = ' ';
         }
-        textObject.text = plugBoardText + "";
-        socketOutline = gameObject.AddComponent<Outline>();
-        socketOutline.enabled = false;
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    void OnTriggerEnter(Collider collision)
-    {
-        PlugBoardPlugScript plug = collision.gameObject.GetComponent<PlugBoardPlugScript>();
-        if (plug && !plugObject)
+        if (textObject != null)
         {
-            // Collided with a plug and no plug is in yet
-            Debug.Log($"[{Time.time:F2}s] Collided with plug socket");
-            SetPlug(plug);
+            textObject.text = plugBoardText.ToString();
+        }
+    }
+
+
+    // --------------------------------------------------
+    // COLLIDER DETECTION
+    // --------------------------------------------------
+
+    private void OnTriggerEnter(Collider collision)
+    {
+        PlugBoardPlugScript plug =
+            collision.GetComponentInParent<PlugBoardPlugScript>();
+
+        if (plug == null)
+        {
+            return;
+        }
+
+        if (!overlappingPlugs.ContainsKey(plug))
+        {
+            overlappingPlugs.Add(
+                plug,
+                new HashSet<Collider>()
+            );
+        }
+
+        overlappingPlugs[plug].Add(collision);
+
+        if (plug.IsDragging())
+        {
+            plug.SetTargetSocket(this);
+        }
+    }
+
+    private void OnTriggerStay(Collider collision)
+    {
+        PlugBoardPlugScript plug =
+            collision.GetComponentInParent<PlugBoardPlugScript>();
+
+        if (plug != null && plug.IsDragging())
+        {
+            plug.SetTargetSocket(this);
         }
     }
 
     private void OnTriggerExit(Collider collision)
     {
-        PlugBoardPlugScript plug = collision.gameObject.GetComponent<PlugBoardPlugScript>();
-        if (plug && plug == plugObject)
+        PlugBoardPlugScript plug =
+            collision.GetComponentInParent<PlugBoardPlugScript>();
+
+        if (plug == null)
         {
-            Debug.Log($"[{Time.time:F2}s] Not collided with plug socket");
-            RemovePlug();
+            return;
         }
+
+        if (!overlappingPlugs.ContainsKey(plug))
+        {
+            return;
+        }
+
+        overlappingPlugs[plug].Remove(collision);
+
+        // Only remove the plug once all its colliders
+        // have exited the socket collider.
+        if (overlappingPlugs[plug].Count == 0)
+        {
+            overlappingPlugs.Remove(plug);
+
+            plug.RemoveTargetSocket(this);
+        }
+    }
+
+
+    // --------------------------------------------------
+    // FIND SOCKET
+    // --------------------------------------------------
+
+    public static PlugBoardPlugSocketScript FindSocketForPlug(
+        PlugBoardPlugScript plug)
+    {
+        PlugBoardPlugSocketScript closestSocket = null;
+
+        float closestDistance = float.MaxValue;
+
+        foreach (PlugBoardPlugSocketScript socket in allSockets)
+        {
+            if (socket == null)
+            {
+                continue;
+            }
+
+            if (!socket.CanAcceptPlug(plug))
+            {
+                continue;
+            }
+
+            if (!socket.overlappingPlugs.ContainsKey(plug))
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(
+                plug.transform.position,
+                socket.transform.position
+            );
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+
+                closestSocket = socket;
+            }
+        }
+
+        return closestSocket;
+    }
+
+
+    // --------------------------------------------------
+    // SOCKET MANAGEMENT
+    // --------------------------------------------------
+
+    public bool CanAcceptPlug(PlugBoardPlugScript plug)
+    {
+        return plug != null &&
+               (plugObject == null || plugObject == plug);
     }
 
     public void SetPlug(PlugBoardPlugScript plug)
     {
-        if (plugObject)
+        if (!CanAcceptPlug(plug))
         {
             return;
         }
-        Debug.Log($"[{Time.time:F2}s] Setting with plug socket");
-        EnableOutline();
-        plug.StartAnimation(plugInPosition);
-        plug.SetPlugBoard(this, plugBoardText);
+
+        // Debug.Log(
+        //     $"[{Time.time:F2}s] Setting plug into socket {plugBoardText}"
+        // );
+
         plugObject = plug;
-        return;
+
+        plugOutPosition = plug.transform.position;
+
+        // Update the plug's information.
+        plug.SetPlugBoard(this, plugBoardText);
+
+        DisableOutline();
+
+        // Animate the plug into the socket.
+        plug.StartAnimation(plugInPosition);
     }
 
-    public void RemovePlug()
+    public void RemovePlug(bool animate = true)
     {
-        if (!plugObject)
+        if (plugObject == null)
         {
             return;
         }
-        DisableOutline();
-        plugObject.StartAnimation(plugOutPosition);
-        plugObject.SetPlugBoard(null, ' ');
+
+        PlugBoardPlugScript oldPlug = plugObject;
+
+        Debug.Log(
+            $"Removing plug. Animate = {animate}, Position = {plugOutPosition}"
+        );
+
         plugObject = null;
+
+        DisableOutline();
+
+        oldPlug.SetPlugBoard(null, ' ');
+
+        if (animate)
+        {
+            oldPlug.StartAnimation(plugOutPosition);
+        }
     }
+
+
+    // --------------------------------------------------
+    // OUTLINE
+    // --------------------------------------------------
 
     public void EnableOutline()
     {
-        socketOutline.enabled = true;
+        if (socketOutline != null && plugObject == null)
+        {
+            socketOutline.enabled = true;
+        }
     }
 
     public void DisableOutline()
     {
-        socketOutline.enabled = false;
+        if (socketOutline != null)
+        {
+            socketOutline.enabled = false;
+        }
     }
 }

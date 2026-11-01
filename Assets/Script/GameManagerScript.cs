@@ -28,6 +28,9 @@ public class GameManagerScript : MonoBehaviour
     bool spinRotor2 = false;
     bool spinRotor3 = false;
 
+    [Header("Key Objects")]
+    public KeyScript[] allKeys; 
+    private int currentEncryptedText;
 
 
     public bool powerOn = false;
@@ -58,20 +61,25 @@ public class GameManagerScript : MonoBehaviour
 
     public void SpinRotor()
     {
-        // spinRotor2 = false;
-        // spinRotor3 = false;
-        // if (rotor1.notch == (rotor1.rotorValue-1))
-        // {
-        //     spinRotor2 = true;
-        // }
-        // if (rotor2.notch == (rotor2.rotorValue-1))
-        // {
-        //     spinRotor2 = true;
-        //     spinRotor3 = true;
-        // }
-        // rotor1.SpinRotorOnce();
-        // if(spinRotor2) rotor2.SpinRotorOnce();
-        // if(spinRotor3) rotor3.SpinRotorOnce();
+        RotorScript rotor1Script = rotor1.rotorScript;
+        RotorScript rotor2Script = rotor2.rotorScript;
+        RotorScript rotor3Script = rotor3.rotorScript;
+
+
+        spinRotor2 = false;
+        spinRotor3 = false;
+        if (rotor1.rotorEncryptionScript.notch == (rotor1Script.rotorValue))
+        {
+            spinRotor2 = true;
+        }
+        if (rotor2.rotorEncryptionScript.notch == (rotor2Script.rotorValue))
+        {
+            spinRotor2 = true;
+            spinRotor3 = true;
+        }
+        rotor1Script.SpinRotorOnce();
+        if(spinRotor2) rotor2Script.SpinRotorOnce();
+        if(spinRotor3) rotor3Script.SpinRotorOnce();
 
     }
 
@@ -117,7 +125,12 @@ public class GameManagerScript : MonoBehaviour
         ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
         print(state);
         actuatorBar.AnimateActuatorBarRotate(state);
-        FindEncryptedText(keyPressed);
+        currentEncryptedText = FindEncryptedText(keyPressed);
+        sentenceTyped += (char)(currentEncryptedText + 'A');
+
+        print($"TURNED LIGHT {currentEncryptedText} ON {allKeys[currentEncryptedText]}");
+        allKeys[currentEncryptedText].LampOn();
+        print("Sentence Typed: " + sentenceTyped);
         // print("Sentence Typed: " + sentenceTyped);
     }
 
@@ -126,6 +139,8 @@ public class GameManagerScript : MonoBehaviour
         // ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
         // print(state);
         // actuatorBar.AnimateActuatorBarRelease(state);
+        print($"TURNED LIGHT {currentEncryptedText} OFF {allKeys[currentEncryptedText]}");
+        allKeys[currentEncryptedText].LampOff();
     }
 
     public void ClearRotorSelected()
@@ -169,55 +184,107 @@ public class GameManagerScript : MonoBehaviour
         return null;
     }
 
+    public void SetPlugBoard(char plug1, char plug2)
+    {
+        int plug1Int = plug1 - 'A';
+        int plug2Int = plug2 - 'A';
+        PlugBoard[plug1Int] = plug2Int;
+        PlugBoard[plug2Int] = plug1Int;
+    }
+
+    public void ResetPlugBoard(char plug1, char plug2)
+    {
+        int plug1Int = plug1 - 'A';
+        int plug2Int = plug2 - 'A';
+        PlugBoard[plug1Int] = plug1Int;
+        PlugBoard[plug2Int] = plug2Int;
+    }
+
     public int FindEncryptedText(string keyPressed)
     {
-        // int plainChar = keyPressed[0] - 'A';
-        // int pass1 = rotor1.PlainToCipher(plainChar);
-        // int pass2 = rotor2.PlainToCipher(pass1);
-        // int pass3 = rotor3.PlainToCipher(pass2);
-        // int pass4 = Reflector[pass3];
-        // int pass5 = rotor3.CipherToPlain(pass4);
-        // int pass6 = rotor2.CipherToPlain(pass5);
-        // int pass7 = rotor1.CipherToPlain(pass6);
-        // print("PLAIN TEXT: " + plainChar + "    CIPHER TEXT:    " + pass7);
+        int plainChar = keyPressed[0] - 'A';
+        int plugBoard1 = PlugBoard[plainChar];
+        int pass1 = rotor1.GetPlainToCipher(plugBoard1);
+        int pass2 = rotor2.GetPlainToCipher(pass1);
+        int pass3 = rotor3.GetPlainToCipher(pass2);
+        int pass4 = Reflector[pass3];
+        int pass5 = rotor3.GetCipherToPlain(pass4);
+        int pass6 = rotor2.GetCipherToPlain(pass5);
+        int pass7 = rotor1.GetCipherToPlain(pass6);
+        int plugBoard2 = PlugBoard[pass7];
+        print("PLAIN TEXT: " + plainChar + "    plugBoard1:    " + plugBoard1);
         
-        // int plainChar = keyPressed[0] - 'A';
+        print("PLAIN TEXT: " + plainChar + "    CIPHER TEXT:    " + pass7);
+        print("Pass7: " + pass7 + "    PlugBoard2:    " + plugBoard2);
+        
         // print("Key Pressed: " + (char)(plainChar + 'A') + " (" + plainChar + ")");
 
-        // int pass1 = rotor1.PlainToCipher(plainChar);
-        // print("Pass 1 (Rotor 1 Forward): " + (char)(pass1 + 'A') + " (" + pass1 + ")");
+        // print("Pass 1 (Rotor 1 Forward): " + (char)(pass1 + 'A') + " (" + pass1 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass2 = rotor2.PlainToCipher(pass1);
-        // print("Pass 2 (Rotor 2 Forward): " + (char)(pass2 + 'A') + " (" + pass2 + ")");
+        // print("Pass 2 (Rotor 2 Forward): " + (char)(pass2 + 'A') + " (" + pass2 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass3 = rotor3.PlainToCipher(pass2);
-        // print("Pass 3 (Rotor 3 Forward): " + (char)(pass3 + 'A') + " (" + pass3 + ")");
+        // print("Pass 3 (Rotor 3 Forward): " + (char)(pass3 + 'A') + " (" + pass3 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass4 = Reflector[pass3];
-        // print("Pass 4 (Reflector):       " + (char)(pass4 + 'A') + " (" + pass4 + ")");
+        // print("Pass 4 (Reflector):       " + (char)(pass4 + 'A') + " (" + pass4 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass5 = rotor3.CipherToPlain(pass4);
-        // print("Pass 5 (Rotor 3 Reverse): " + (char)(pass5 + 'A') + " (" + pass5 + ")");
+        // print("Pass 5 (Rotor 3 Reverse): " + (char)(pass5 + 'A') + " (" + pass5 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass6 = rotor2.CipherToPlain(pass5);
-        // print("Pass 6 (Rotor 2 Reverse): " + (char)(pass6 + 'A') + " (" + pass6 + ")");
+        // print("Pass 6 (Rotor 2 Reverse): " + (char)(pass6 + 'A') + " (" + pass6 + ") Current Sentence = " + sentenceTyped);
 
-        // int pass7 = rotor1.CipherToPlain(pass6);
-        // print("Pass 7 (Rotor 1 Reverse): " + (char)(pass7 + 'A') + " (" + pass7 + ")");
+        // print("Pass 7 (Rotor 1 Reverse): " + (char)(pass7 + 'A') + " (" + pass7 + ") Current Sentence = " + sentenceTyped);
 
-        // print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A'));
+        print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A') + " Current Sentence = " + sentenceTyped);
         
-        // return pass7;
-        return 0;
+        return plugBoard2;
     }
 
     public Dictionary<int, int> Reflector = new Dictionary<int, int>()
     {
-        {0, 24}, {1, 17}, {2, 20}, {3, 7}, {4, 16}, {5, 18},
-        {6,  11}, {7, 3}, {8, 15}, {9, 23},{10, 13}, {11, 6},
-        {12, 14}, {13, 10}, {14, 12}, {15, 8}, {16, 4}, {17, 1},
-        {18, 5}, {19, 21}, {20, 2}, {21, 19}, {22, 25}, {23, 9},
-        {24, 0},{25, 22}
+    { 0, 24 }, { 24, 0 },  // A <-> Y
+        { 1, 17 }, { 17, 1 },  // B <-> R
+        { 2, 20 }, { 20, 2 },  // C <-> U
+        { 3, 7  }, { 7,  3 },  // D <-> H
+        { 4, 16 }, { 16, 4 },  // E <-> Q
+        { 5, 18 }, { 18, 5 },  // F <-> S
+        { 6, 11 }, { 11, 6 },  // G <-> L
+        { 8, 15 }, { 15, 8 },  // I <-> P
+        { 9, 23 }, { 23, 9 },  // J <-> X
+        { 10, 13}, { 13, 10},  // K <-> N
+        { 12, 14}, { 14, 12},  // M <-> O
+        { 19, 25}, { 25, 19},  // T <-> Z
+        { 21, 22}, { 22, 21}   // V <-> W
+    
+    
     };
+
+    public Dictionary<int, int> PlugBoard = new Dictionary<int, int>()
+{
+    { 0, 0 },   // A <-> A
+    { 1, 1 },   // B <-> B
+    { 2, 2 },   // C <-> C
+    { 3, 3 },   // D <-> D
+    { 4, 4 },   // E <-> E
+    { 5, 5 },   // F <-> F
+    { 6, 6 },   // G <-> G
+    { 7, 7 },   // H <-> H
+    { 8, 8 },   // I <-> I
+    { 9, 9 },   // J <-> J
+    { 10, 10 }, // K <-> K
+    { 11, 11 }, // L <-> L
+    { 12, 12 }, // M <-> M
+    { 13, 13 }, // N <-> N
+    { 14, 14 }, // O <-> O
+    { 15, 15 }, // P <-> P
+    { 16, 16 }, // Q <-> Q
+    { 17, 17 }, // R <-> R
+    { 18, 18 }, // S <-> S
+    { 19, 19 }, // T <-> T
+    { 20, 20 }, // U <-> U
+    { 21, 21 }, // V <-> V
+    { 22, 22 }, // W <-> W
+    { 23, 23 }, // X <-> X
+    { 24, 24 }, // Y <-> Y
+    { 25, 25 }  // Z <-> Z
+};
 
 }

@@ -1,160 +1,337 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 
 public class PlugBoardPlugScript : MonoBehaviour
 {
+    [Header("Plug Designs")]
+    public GameObject[] plugDesigns;
+
+    [Header("Plug Board Plug Interact")]
+    public Interactable interactable;
+
     [Header("Plug Board Information")]
     public char plugBoardChar;
-    public PlugBoardPlugSocketScript plugSocket;
     public bool plugBoardSet = false;
 
+    [Header("Socket Information")]
+    public PlugBoardPlugSocketScript plugSocket;
 
-    [Header("For selecting")]
+    private PlugBoardPlugSocketScript currentSocket;
+    private PlugBoardPlugSocketScript targetSocket;
+
+    [Header("Dragging")]
+    [SerializeField] private float draggingSmoothTime = 0.04f;
+
     private bool isSelected = false;
     private bool dragging = false;
-    private Vector2 mousePositionSwappingBefore;
-    private Vector2 mousePositionSwappingAfter;
-    public float draggingSpeed = 4f;
 
+    private Camera mainCamera;
+    private Plane draggingPlane;
 
+    private Vector3 mouseOffset;
+    private Vector3 dragVelocity;
+
+    private bool releasePending = false;
 
     [Header("Animation")]
-    private bool inAnimation = false;
+    public bool inAnimation = false;
     private Vector3 endPosition;
     private Vector3 currentVelocity;
-    private float stoppingDistance = 0.01f;
-    public float smoothTime = 0.5f;
-    // Start is called before the first frame update
 
-    void Start()
+    [SerializeField] private float stoppingDistance = 0.01f;
+    [SerializeField] private float smoothTime = 0.5f;
+
+
+    // --------------------------------------------------
+    // INITIALISATION
+    // --------------------------------------------------
+
+    private void Start()
     {
+        mainCamera = Camera.main;
+
+        RandomisePlugShape();
+
+        currentSocket = plugSocket;
+        
+        interactable = GetComponent<Interactable>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void RandomisePlugShape()
     {
-        if (inAnimation)
+        foreach (GameObject plug in plugDesigns)
         {
-            PlugBoardPlugAnimation(endPosition);
-        }
-    }
-
-
-    void LateUpdate()
-    {
-        if (inAnimation)
-        {
-            // Plug going in or out
-            // No input be taken
-            // If plug taken out, then track where the mouse is so plug does not fly
-            mousePositionSwappingBefore = Input.mousePosition;
-            return;
-        }
-
-        PlugOutDragging();
-        PlugInDragging();
-
-    }
-
-    public void PlugInDragging()
-    {
-        if (!plugSocket)
-        {
-            return;
-        }
-        if (Input.GetMouseButtonDown(0) && isSelected)
-        {
-            // Plug in and clicked for removingn
-            dragging = true;
-            plugSocket.RemovePlug();
-            // plugSocket.SetPlug(this);
-            inAnimation = true;
-            mousePositionSwappingAfter = Input.mousePosition;
-            return;
-        }
-        if (Input.GetMouseButton(0) && dragging)
-        {
-            // When plug is being dragged around
-            mousePositionSwappingAfter = Input.mousePosition;
-            // Vector3 newPosition = new Vector3(mousePositionSwappingAfter.x, mousePositionSwappingAfter.y, transform.position.z);
-            Vector3 newPosition = new Vector3(transform.position.x - ((mousePositionSwappingAfter.x - mousePositionSwappingBefore.x)*draggingSpeed),
-                                             transform.position.y + (mousePositionSwappingAfter.y - mousePositionSwappingBefore.y)*draggingSpeed, 
-                                             transform.position.z);
-            transform.position = Vector3.Lerp(
-                transform.position,
-                newPosition,
-                0.5f * Time.deltaTime
-            );
-
-            mousePositionSwappingBefore = mousePositionSwappingAfter;
-            // print("HOLDING isSelected: " + isSelected + "     selectedForSwapping" + selectedForSwapping + "    ROtor NUMBEr: " + rotorNumber);
-        }
-        if (!Input.GetMouseButton(0) && dragging)
-        {
-            Debug.Log($"[{Time.time:F2}s] Mouse up plug");
-            // Plug is let go
-            // print("ROTOR LET GO    ROTOR NUMBER" + rotorNumber );
-            isSelected = false;
-            dragging = false;
-            inAnimation = true;
-            if (plugSocket)
+            if (plug != null)
             {
-                Debug.Log($"[{Time.time:F2}s] mouse up and plug decided plug");
-                // If touching a socket, then plug in animation
-                plugSocket.DisableOutline();
+                plug.SetActive(false);
             }
-            // UpdateSelectedForSwapping(false);
         }
 
+        if (plugDesigns.Length > 0)
+        {
+            int randomIndex = Random.Range(0, plugDesigns.Length);
+
+            plugDesigns[randomIndex].SetActive(true);
+        }
     }
 
-    public void PlugOutDragging()
+
+    // --------------------------------------------------
+    // UPDATE
+    // --------------------------------------------------
+
+private void Update()
+{
+    if (inAnimation)
     {
-        if (plugSocket && !Input.GetMouseButton(0) && dragging)
+        if (dragging && Input.GetMouseButtonUp(0))
         {
-            plugSocket.DisableOutline();
-            isSelected = false;
-            dragging = false;
-            inAnimation = true;
+            releasePending = true;
+        }
+
+        PlugBoardPlugAnimation();
+        return;
+    }
+
+    if (releasePending)
+    {
+        releasePending = false;
+        StopDragging();
+        return;
+    }
+
+    HandleDragging();
+}
+
+    private void HandleDragging()
+    {
+        if (Input.GetMouseButtonDown(0) && interactable.isSelected)
+        {
+            StartDragging();
+        }
+
+        if (dragging && Input.GetMouseButton(0))
+        {
+            UpdateDragging();
+        }
+
+        if (dragging && Input.GetMouseButtonUp(0))
+        {
+            StopDragging();
+        }
+    }
+
+
+    // --------------------------------------------------
+    // DRAGGING
+    // --------------------------------------------------
+
+    private void StartDragging()
+    {
+        dragging = true;
+
+        dragVelocity = Vector3.zero;
+
+        // Create a plane parallel to the camera
+        // at the plug's current depth.
+        draggingPlane = new Plane(
+            mainCamera.transform.forward,
+            transform.position
+        );
+
+        // Get the mouse position in world space.
+        Ray mouseRay = mainCamera.ScreenPointToRay(
+            Input.mousePosition
+        );
+
+        if (draggingPlane.Raycast(mouseRay, out float distance))
+        {
+            Vector3 mouseWorldPosition = mouseRay.GetPoint(distance);
+
+            // Maintain the original distance between
+            // the mouse and the centre of the plug.
+            mouseOffset = transform.position - mouseWorldPosition;
+        }
+
+        // Disconnect from the original socket.
+        if (currentSocket != null)
+        {
+            currentSocket.RemovePlug(true);
+        }
+
+        currentSocket = null;
+        plugSocket = null;
+
+        plugBoardChar = ' ';
+        plugBoardSet = false;
+
+        targetSocket = null;
+    }
+
+    private void UpdateDragging()
+    {
+        Ray mouseRay = mainCamera.ScreenPointToRay(
+            Input.mousePosition
+        );
+
+        if (draggingPlane.Raycast(mouseRay, out float distance))
+        {
+            Vector3 mouseWorldPosition = mouseRay.GetPoint(distance);
+
+            Vector3 targetPosition = mouseWorldPosition + mouseOffset;
+
+            // Smoothly follow the mouse.
+            transform.position = Vector3.SmoothDamp(
+                transform.position,
+                targetPosition,
+                ref dragVelocity,
+                draggingSmoothTime
+            );
+        }
+
+        // Update the socket the plug is hovering over.
+        UpdateTargetSocket();
+    }
+
+   private void StopDragging()
+    {
+        Debug.Log(
+            $"STOP DRAGGING: targetSocket = " +
+            $"{(targetSocket != null ? targetSocket.name : "NULL")}"
+        );
+
+        dragging = false;
+        dragVelocity = Vector3.zero;
+
+        if (targetSocket != null &&
+            targetSocket.CanAcceptPlug(this))
+        {
+            Debug.Log($"REINSERTING INTO: {targetSocket.name}");
+
+            targetSocket.SetPlug(this);
+            targetSocket = null;
+
+            interactable.isSelected = false;
             return;
         }
-        if (Input.GetMouseButtonDown(0) && isSelected)
+
+        if (targetSocket != null)
         {
-            // Debug.Log($"[{Time.time:F2}s] Mouse button down plug");
-            mousePositionSwappingBefore = Input.mousePosition;
-            dragging = true;
+            targetSocket.DisableOutline();
         }
-        if (Input.GetMouseButton(0) && dragging)
+
+        targetSocket = null;
+        interactable.isSelected = false;
+    }
+
+
+    private void RecalculateMouseOffset()
+    {
+        Ray mouseRay = mainCamera.ScreenPointToRay(
+            Input.mousePosition
+        );
+
+        if (draggingPlane.Raycast(mouseRay, out float distance))
         {
-            // When plug is being dragged around
-            mousePositionSwappingAfter = Input.mousePosition;
-           Vector3 newPosition = new Vector3(transform.position.x - ((mousePositionSwappingAfter.x - mousePositionSwappingBefore.x)*draggingSpeed),
-                                             transform.position.y + (mousePositionSwappingAfter.y - mousePositionSwappingBefore.y)*draggingSpeed, 
-                                             transform.position.z);
-            transform.position = Vector3.Lerp(
-                transform.position,
-                newPosition,
-                0.5f * Time.deltaTime
-            );
+            Vector3 mouseWorldPosition = mouseRay.GetPoint(distance);
 
-            mousePositionSwappingBefore = mousePositionSwappingAfter;
-
-            // print("HOLDING isSelected: " + isSelected + "     selectedForSwapping" + selectedForSwapping + "    ROtor NUMBEr: " + rotorNumber);
+            mouseOffset = transform.position - mouseWorldPosition;
         }
-        return;
+    }
 
-    } 
+    // --------------------------------------------------
+    // SOCKET DETECTION
+    // --------------------------------------------------
 
+    private void UpdateTargetSocket()
+    {
+        PlugBoardPlugSocketScript detectedSocket =
+            PlugBoardPlugSocketScript.FindSocketForPlug(this);
+
+        if (detectedSocket == targetSocket)
+        {
+            return;
+        }
+
+        Debug.Log($"TARGET SOCKET ASSIGNED: {name}");
+
+        // Remove outline from the previous socket.
+        if (targetSocket != null)
+        {
+            targetSocket.DisableOutline();
+        }
+
+        targetSocket = detectedSocket;
+
+        // Highlight the new socket.
+        if (targetSocket != null)
+        {
+            targetSocket.EnableOutline();
+        }
+    }
+
+    public void SetTargetSocket(
+        PlugBoardPlugSocketScript socket)
+    {
+        if (!dragging || socket == null)
+        {
+            return;
+        }
+
+        if (!socket.CanAcceptPlug(this))
+        {
+            return;
+        }
+
+        if (targetSocket != null && targetSocket != socket)
+        {
+            targetSocket.DisableOutline();
+        }
+
+        targetSocket = socket;
+
+        targetSocket.EnableOutline();
+    }
+
+    public void RemoveTargetSocket(
+        PlugBoardPlugSocketScript socket)
+    {
+        if (targetSocket == socket)
+        {
+            targetSocket.DisableOutline();
+
+            targetSocket = null;
+        }
+    }
+
+
+    // --------------------------------------------------
+    // SELECTION
+    // --------------------------------------------------
 
     public void UpdateIsSelected()
     {
         isSelected = !isSelected;
     }
 
-    private void PlugBoardPlugAnimation(Vector3 endPosition)
+    public void SetSelected(bool selected)
     {
+        isSelected = selected;
+    }
 
+    public bool IsDragging()
+    {
+        return dragging;
+    }
+
+
+    // --------------------------------------------------
+    // ANIMATION
+    // --------------------------------------------------
+
+    private void PlugBoardPlugAnimation()
+    {
+        print($"endPosition = {endPosition}");
         transform.position = Vector3.SmoothDamp(
             transform.position,
             endPosition,
@@ -162,94 +339,74 @@ public class PlugBoardPlugScript : MonoBehaviour
             smoothTime
         );
 
-        float distance = Vector3.Distance(transform.position, endPosition);
+        float distance = Vector3.Distance(
+            transform.position,
+            endPosition
+        );
+
         if (distance <= stoppingDistance)
         {
-            // Snap to exact target position
             transform.position = endPosition;
-            
-            // Reset velocity and stop processing
+
             currentVelocity = Vector3.zero;
+
             inAnimation = false;
-            if (plugSocket)
+
+            // Recalculate the offset after the plug-out animation.
+            // This prevents UpdateDragging from moving the plug
+            // back towards its previous plugged-in position.
+            if (dragging && Input.GetMouseButton(0))
             {
-                isSelected = false;
+                RecalculateMouseOffset();
+            }
+
+            if (currentSocket != null)
+            {
+                interactable.isSelected = false;
             }
         }
     }
 
     public void StartAnimation(Transform newEndPosition)
     {
-            Debug.Log($"[{Time.time:F2}s] Setting new position plug");
+        if (newEndPosition == null) return;
+
+        Debug.Log(
+            $"START ANIMATION (Transform): {newEndPosition.position}\n" +
+            System.Environment.StackTrace
+        );
+
         endPosition = newEndPosition.position;
+        currentVelocity = Vector3.zero;
+        inAnimation = true;
     }
 
-    public void SetPlugBoard(PlugBoardPlugSocketScript socket, char newChar)
+    public void StartAnimation(Vector3 newEndPosition)
     {
-            Debug.Log($"[{Time.time:F2}s] Setting new plug position plug");
+        Debug.Log(
+            $"START ANIMATION (Vector3): {newEndPosition}\n" +
+            System.Environment.StackTrace
+        );
+
+        endPosition = newEndPosition;
+        currentVelocity = Vector3.zero;
+        inAnimation = true;
+    }
+
+    // --------------------------------------------------
+    // PLUG BOARD INFORMATION
+    // --------------------------------------------------
+
+    public void SetPlugBoard(
+        PlugBoardPlugSocketScript socket,
+        char newChar)
+    {
         plugSocket = socket;
+
+        currentSocket = socket;
+
         plugBoardChar = newChar;
+
+        plugBoardSet = socket != null;
     }
 }
-
-
-
-// void LateUpdate()
-//     {
-//         if (inAnimation)
-//         {
-//             // Plug going in or out
-//             // No input be taken
-//             // If plug taken out, then track where the mouse is so plug does not fly
-//             mousePositionSwappingBefore = Input.mousePosition;
-//             return;
-//         }
-//         if (Input.GetMouseButtonDown(0) && isSelected)
-//         {
-//             Debug.Log($"[{Time.time:F2}s] Mouse button down plug");
-//             // If plug got clicked
-//             if (plugSocket)
-//             {
-//                 Debug.Log($"[{Time.time:F2}s] plugged in so removing plug"); 
-//                 // If plug in, then take it out, start animation
-//                 plugSocket.RemovePlug();
-//                 inAnimation = true;
-//                 // Continue so plug can move immediately
-//             }
-//             mousePositionSwappingBefore = Input.mousePosition;
-//             dragging = true;
-//         }
-//         if (Input.GetMouseButton(0) && dragging)
-//         {
-//             // When plug is being dragged around
-//             mousePositionSwappingAfter = Input.mousePosition;
-//             // Vector3 newPosition = new Vector3(mousePositionSwappingAfter.x, mousePositionSwappingAfter.y, transform.position.z);
-//             Vector3 newPosition = new Vector3(transform.position.x - ((mousePositionSwappingAfter.x - mousePositionSwappingBefore.x)*draggingSpeed),
-//                                              transform.position.y + (mousePositionSwappingAfter.y - mousePositionSwappingBefore.y)*draggingSpeed, 
-//                                              transform.position.z);
-//             transform.position = Vector3.Lerp(
-//                 transform.position,
-//                 newPosition,
-//                 0.5f * Time.deltaTime
-//             );
-//             mousePositionSwappingBefore = mousePositionSwappingAfter;
-//             // print("HOLDING isSelected: " + isSelected + "     selectedForSwapping" + selectedForSwapping + "    ROtor NUMBEr: " + rotorNumber);
-//         }
-//         if (!Input.GetMouseButton(0) && dragging)
-//         {
-//             Debug.Log($"[{Time.time:F2}s] Mouse up plug");
-//             // Plug is let go
-//             // print("ROTOR LET GO    ROTOR NUMBER" + rotorNumber );
-//             isSelected = false;
-//             dragging = false;
-//             inAnimation = true;
-//             if (plugSocket)
-//             {
-//                 Debug.Log($"[{Time.time:F2}s] mouse up and plug decided plug");
-//                 // If touching a socket, then plug in animation
-//                 plugSocket.DisableOutline();
-//             }
-//             // UpdateSelectedForSwapping(false);
-//         }
-//         return;
-//     }
