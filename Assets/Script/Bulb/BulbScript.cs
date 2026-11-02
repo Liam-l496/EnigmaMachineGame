@@ -38,7 +38,7 @@ public class BulbScript : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0)) {
             print("IN BULB CLICK + " + PlayerPickUpScript.Instance.skipUpdate);
-            if (PlayerPickUpScript.Instance.skipUpdate)
+            if (PlayerPickUpScript.Instance.skipUpdate && lampTestingScript)
             {
                 lampTestingScript.DeactivateLampTestingScript();
                 lampTestingScript = null;

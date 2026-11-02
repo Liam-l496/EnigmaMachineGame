@@ -39,12 +39,15 @@ public class RotorScript : MonoBehaviour
 
     public int rotorPlace;
 
+    [Header("Left Side")] 
+    [SerializeField] Transform leftSideTransform;
+
 
     void Start()
     {
         List<Transform> matchingList = new List<Transform>();
 
-        foreach (Transform child in transform)
+        foreach (Transform child in leftSideTransform)
         {
             if (child.name.StartsWith("Number"))
             {

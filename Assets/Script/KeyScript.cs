@@ -136,7 +136,7 @@ public class KeyScript : MonoBehaviour
 
 
     public void LampOn()
-    {   
+    {   if (!GameManagerScript.Instance.powerOn) return;
         LampOnPlane();
     }
 

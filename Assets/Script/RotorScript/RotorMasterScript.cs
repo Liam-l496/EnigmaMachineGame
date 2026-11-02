@@ -19,6 +19,8 @@ public class RotorMasterScript : MonoBehaviour
     public RotorScript rotorScript;
     public RotorSwappingScript rotorSwappingScript;
     public RotorEncryptionScript rotorEncryptionScript;
+    public RotorInteractScript rotorInteractScript;
+    public GameObject cables;
 
 
     // [Header("Interacting Variables")]
@@ -46,7 +48,14 @@ public class RotorMasterScript : MonoBehaviour
         rotorScript = GetComponent<RotorScript>();
         rotorSwappingScript = GetComponent<RotorSwappingScript>();
         rotorEncryptionScript  = GetComponent<RotorEncryptionScript>();
+        rotorInteractScript= GetComponent<RotorInteractScript>();
+        cables.SetActive(false);
         // = GetComponent<>();
+    }
+
+    void Update()
+    {
+
     }
 
     void LateUpdate()
@@ -113,6 +122,7 @@ public class RotorMasterScript : MonoBehaviour
     public void UpdateEndPosition(Transform newEndPositionTransform)
     {
         endPosition = newEndPositionTransform.position;
+        InAnimation = true;
     }    
 
     /// <summary>
@@ -139,8 +149,10 @@ public class RotorMasterScript : MonoBehaviour
     {
         ReflectorHolding = reflectorHolding;
         interactable.UpdateCanPickUp(reflectorHolding);
+        print("IN UPDATE REFLECTOR HOLDINGS STATE");
         if (!reflectorHolding)
         {
+            rotorInteractScript.enabled = false;
             rotorSwappingScript.enabled = true;
             rotorSwappingScript.RotorSwappingAnimationState(reflectorHolding);
         }
@@ -148,6 +160,7 @@ public class RotorMasterScript : MonoBehaviour
         {
             rotorSwappingScript.RotorSwappingAnimationState(reflectorHolding);
             rotorSwappingScript.enabled = false;
+            rotorInteractScript.enabled = true;
         }
     }
 

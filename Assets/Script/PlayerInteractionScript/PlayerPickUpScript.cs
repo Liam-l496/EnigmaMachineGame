@@ -123,7 +123,7 @@ public class PlayerPickUpScript : MonoBehaviour
 
         float distance = Vector3.Distance(heldObjectTransform.position, endPosition);
         float angle = Quaternion.Angle(heldObjectTransform.rotation, originalHeldRotation);
-        print("distance = " + distance + "    stoppingdistance = " + stoppingDistance + "   rotation = " + angle);
+        // print("distance = " + distance + "    stoppingdistance = " + stoppingDistance + "   rotation = " + angle);
         if (distance <= stoppingDistance && angle <= 0.5f)
         {
             // Snap to exact target position

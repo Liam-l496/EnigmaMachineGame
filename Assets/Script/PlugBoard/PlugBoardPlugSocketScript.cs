@@ -20,8 +20,10 @@ public class PlugBoardPlugSocketScript : MonoBehaviour
     [Header("Collider")]
     [SerializeField] private BoxCollider socketCollider;
 
+    [Header("Object references")]
     private Outline socketOutline;
-
+    private Animator animatorPlugSocket;
+    private int isPluggedHash;
 
     // --------------------------------------------------
     // SOCKET REGISTRY
@@ -59,6 +61,10 @@ public class PlugBoardPlugSocketScript : MonoBehaviour
         }
 
         socketOutline.enabled = false;
+
+        animatorPlugSocket = GetComponent<Animator>();
+
+        isPluggedHash = Animator.StringToHash("isPlugged");
     }
 
     private void OnEnable()
@@ -238,6 +244,7 @@ public class PlugBoardPlugSocketScript : MonoBehaviour
 
         // Animate the plug into the socket.
         plug.StartAnimation(plugInPosition);
+        animatorPlugSocket.SetBool(isPluggedHash, true);
     }
 
     public void RemovePlug(bool animate = true)
@@ -262,6 +269,7 @@ public class PlugBoardPlugSocketScript : MonoBehaviour
         if (animate)
         {
             oldPlug.StartAnimation(plugOutPosition);
+            animatorPlugSocket.SetBool(isPluggedHash, false);
         }
     }
 

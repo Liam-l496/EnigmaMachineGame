@@ -129,10 +129,12 @@ public class RotorSwappingScript : MonoBehaviour
     {
         if (!reflectorHolding)
         {
+            print("LIFTING Up");
             rotorMasterScript.UpdateEndPosition(RotorPositionLifted);
         }
         else
         {
+            print("LIFTING Down");
             rotorMasterScript.UpdateEndPosition(RotorPositionStationary);
         }
         rotorMasterScript.InAnimation = true;
