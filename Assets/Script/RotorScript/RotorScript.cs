@@ -18,6 +18,9 @@ public class RotorScript : MonoBehaviour
     [SerializeField] Vector3 rotationDirection = new Vector3(-1, 0, 0);
 
     public int rotorValue = 1;
+    [Header("For Actuator Animation")]
+    private int previousRotorValue = 1;
+    private bool actuatorAnimatorSet = false;
 
     public float maxYCoordinate;
 
@@ -63,8 +66,23 @@ public class RotorScript : MonoBehaviour
         print("rotorMasterScript + " + rotorMasterScript);
     }
 
+    void Update()
+    {
+        if (rotorValue != previousRotorValue)
+        {
+            GameManagerScript.Instance.AnimateActuatorBarPressing(rotorPlace == 2, rotorPlace == 3);
+            previousRotorValue = rotorValue;
+            actuatorAnimatorSet = true;
+        }
+    }
+
     void LateUpdate()
     { 
+        if (actuatorAnimatorSet)
+        {
+            GameManagerScript.Instance.AnimateActuatorBarReleasing();
+            actuatorAnimatorSet = false;
+        }
         if (rotorMasterScript.Transitioning || rotorMasterScript.InAnimation)
         {
             return;

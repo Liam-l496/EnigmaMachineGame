@@ -35,6 +35,10 @@ public class GameManagerScript : MonoBehaviour
 
     public bool powerOn = false;
 
+    [Header("Electric Cables")]
+
+    [SerializeField] ElectricityAnimationController electricityAnimationController;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -101,19 +105,32 @@ public class GameManagerScript : MonoBehaviour
         return ActuatorBarScript.AnimationState.OneRotate;
     }
 
-    // public ActuatorBarScript.AnimationState ActuatorBarReleaseState()
-    // {
-    //     // if (rotor1.notchPosition == notchRequired)
-    //     // {
-    //     //     return ActuatorBarScript.AnimationState.OneTwoRelease;
-    //     // }
-    //     // else if (rotor2.notchPosition == notchRequired)
-    //     // {
-    //     //     return ActuatorBarScript.AnimationState.OneTwoThreeRelease;
-    //     // }
-    //     // return ActuatorBarScript.AnimationState.OneRelease;
+    public ActuatorBarScript.AnimationState ActuatorBarReleaseState()
+    {
+        if (rotor2.rotorScript.rotorValue == rotor2.rotorEncryptionScript.notch)
+        {
+            return ActuatorBarScript.AnimationState.OneTwoThreeRelease;
+        }
+        else if (rotor1.rotorScript.rotorValue == rotor1.rotorEncryptionScript.notch)
+        {
+            return ActuatorBarScript.AnimationState.OneTwoRelease;
+        }
+        return ActuatorBarScript.AnimationState.OneRelease;
         
-    // }
+    }
+
+    public void AnimateActuatorBarPressing(bool spinRotor2, bool spinRotor3)
+    {
+        ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
+        actuatorBar.AnimateActuatorBarRotate(state);
+    }
+
+    public void AnimateActuatorBarReleasing()
+    {
+        ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
+        actuatorBar.AnimateActuatorBarRelease(state);
+        
+    }
 
     public void KeyPress(string keyPressed)
     {
@@ -122,25 +139,34 @@ public class GameManagerScript : MonoBehaviour
             sentenceTyped += keyPressed;
         }
         SpinRotor();
-        ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
-        print(state);
-        actuatorBar.AnimateActuatorBarRotate(state);
+        AnimateActuatorBarPressing(spinRotor2, spinRotor3);
+        // ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
+        // print(state);
+        // actuatorBar.AnimateActuatorBarRotate(state);
+        electricityAnimationController.AddToList(ElectricWireEnum.KeyToPlug, keyPressed[0] - 'A');
         currentEncryptedText = FindEncryptedText(keyPressed);
         sentenceTyped += (char)(currentEncryptedText + 'A');
 
         print($"TURNED LIGHT {currentEncryptedText} ON {allKeys[currentEncryptedText]}");
         allKeys[currentEncryptedText].LampOn();
         print("Sentence Typed: " + sentenceTyped);
-        // print("Sentence Typed: " + sentenceTyped);
+
+
+    
+        electricityAnimationController.AddToList(ElectricWireEnum.PlugToKey, currentEncryptedText);
+        electricityAnimationController.AddToList(ElectricWireEnum.KeyToBulb, currentEncryptedText);    
+
     }
 
     public void KeyRelease()
     {
+        AnimateActuatorBarReleasing();
         // ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
         // print(state);
         // actuatorBar.AnimateActuatorBarRelease(state);
         print($"TURNED LIGHT {currentEncryptedText} OFF {allKeys[currentEncryptedText]}");
         allKeys[currentEncryptedText].LampOff();
+        electricityAnimationController.KeyRelease();        
     }
 
     public void ClearRotorSelected()
@@ -192,6 +218,17 @@ public class GameManagerScript : MonoBehaviour
         PlugBoard[plug2Int] = plug1Int;
     }
 
+    public int GetPlugBoardCipher(char character)
+    {
+        int cipher = character - 'A';
+        return PlugBoard[cipher];
+    }
+
+    public int GetPlugBoardCipher(int character)
+    {
+        return PlugBoard[character];
+    }
+
     public void ResetPlugBoard(char plug1, char plug2)
     {
         int plug1Int = plug1 - 'A';
@@ -203,19 +240,36 @@ public class GameManagerScript : MonoBehaviour
     public int FindEncryptedText(string keyPressed)
     {
         int plainChar = keyPressed[0] - 'A';
-        int plugBoard1 = PlugBoard[plainChar];
+
+        // electricityController.PowerOnWirePlugBoardIn(plainChar);
+        // plugBoardWire1 = plainChar;
+
+        electricityAnimationController.AddToList(ElectricWireEnum.PlugIn, plainChar);
+
+        int plugBoard1 = GetPlugBoardCipher(plainChar);
+        // electricityController.PowerOnWirePlugBoardOut(plugBoard1);
+        // plugBoardWire2 = plugBoard1;
+        electricityAnimationController.AddToList(ElectricWireEnum.PlugOut, plugBoard1);
+
         int pass1 = rotor1.GetPlainToCipher(plugBoard1);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor1, pass1);
         int pass2 = rotor2.GetPlainToCipher(pass1);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor2, pass2);
         int pass3 = rotor3.GetPlainToCipher(pass2);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor3, pass3);
         int pass4 = Reflector[pass3];
         int pass5 = rotor3.GetCipherToPlain(pass4);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor3Reverse, pass5);
         int pass6 = rotor2.GetCipherToPlain(pass5);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor2Reverse, pass6);
         int pass7 = rotor1.GetCipherToPlain(pass6);
-        int plugBoard2 = PlugBoard[pass7];
-        print("PLAIN TEXT: " + plainChar + "    plugBoard1:    " + plugBoard1);
-        
-        print("PLAIN TEXT: " + plainChar + "    CIPHER TEXT:    " + pass7);
-        print("Pass7: " + pass7 + "    PlugBoard2:    " + plugBoard2);
+         electricityAnimationController.AddToList(ElectricWireEnum.Rotor1Reverse, pass7);
+
+        electricityAnimationController.AddToList(ElectricWireEnum.PlugInReverse, pass7);
+
+        int plugBoard2 = GetPlugBoardCipher(pass7);
+
+        electricityAnimationController.AddToList(ElectricWireEnum.PlugOutReverse, plugBoard2);
         
         // print("Key Pressed: " + (char)(plainChar + 'A') + " (" + plainChar + ")");
 

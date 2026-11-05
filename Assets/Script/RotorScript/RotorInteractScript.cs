@@ -239,7 +239,7 @@ public class RotorInteractScript: MonoBehaviour
     {
         if (!open && !InAnimation())
         {
-            cables.SetActive(false);
+            cables.SetActive(true);
         }
         else if (open && !cables.activeSelf)
         {

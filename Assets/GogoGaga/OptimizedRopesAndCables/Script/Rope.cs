@@ -145,7 +145,7 @@ namespace GogoGaga.OptimizedRopesAndCables
             }
         }
 
-        private bool AreEndPointsValid()
+        public bool AreEndPointsValid()
         {
             return startPoint != null && endPoint != null;
         }

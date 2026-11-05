@@ -21,6 +21,7 @@ public class RotorMasterScript : MonoBehaviour
     public RotorEncryptionScript rotorEncryptionScript;
     public RotorInteractScript rotorInteractScript;
     public GameObject cables;
+    public RotorCableAssignerScript rotorCableAssignerScript;
 
 
     // [Header("Interacting Variables")]
@@ -49,7 +50,8 @@ public class RotorMasterScript : MonoBehaviour
         rotorSwappingScript = GetComponent<RotorSwappingScript>();
         rotorEncryptionScript  = GetComponent<RotorEncryptionScript>();
         rotorInteractScript= GetComponent<RotorInteractScript>();
-        cables.SetActive(false);
+        cables.SetActive(true);
+        rotorCableAssignerScript = GetComponent<RotorCableAssignerScript>();
         // = GetComponent<>();
     }
 
@@ -135,12 +137,10 @@ public class RotorMasterScript : MonoBehaviour
         // rotorScript.enabled = !flapUp;
         if (flapUp)
         {
-            rotorScript.enabled = false;
             interactable.UpdateCanPickUp(true);
         }
         else
         {
-            rotorScript.enabled = true;
             interactable.UpdateCanPickUp(false);
         }
     }
