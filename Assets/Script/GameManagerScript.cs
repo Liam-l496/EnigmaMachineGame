@@ -119,6 +119,13 @@ public class GameManagerScript : MonoBehaviour
         
     }
 
+    public void EXTERNALAnimateActuatorBarPressing()
+    {
+        AnimateActuatorBarPressing(spinRotor2, spinRotor3);
+    }
+
+
+
     public void AnimateActuatorBarPressing(bool spinRotor2, bool spinRotor3)
     {
         ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
@@ -135,38 +142,48 @@ public class GameManagerScript : MonoBehaviour
     public void KeyPress(string keyPressed)
     {
         // rotor1.SpinRotorOnce();
-        if (powerOn) {
-            sentenceTyped += keyPressed;
-        }
-        SpinRotor();
-        AnimateActuatorBarPressing(spinRotor2, spinRotor3);
+        // if (powerOn) {
+        //     sentenceTyped += keyPressed;
+        // }
+        // SpinRotor();
+        // AnimateActuatorBarPressing(spinRotor2, spinRotor3);
         // ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
         // print(state);
         // actuatorBar.AnimateActuatorBarRotate(state);
-        electricityAnimationController.AddToList(ElectricWireEnum.KeyToPlug, keyPressed[0] - 'A');
+        // electricityAnimationController.AddToList(ElectricWireEnum.KeyToPlug, keyPressed[0] - 'A');
         currentEncryptedText = FindEncryptedText(keyPressed);
         sentenceTyped += (char)(currentEncryptedText + 'A');
 
-        print($"TURNED LIGHT {currentEncryptedText} ON {allKeys[currentEncryptedText]}");
-        allKeys[currentEncryptedText].LampOn();
-        print("Sentence Typed: " + sentenceTyped);
+        // print($"TURNED LIGHT {currentEncryptedText} ON {allKeys[currentEncryptedText]}");
+        // allKeys[currentEncryptedText].LampOn();
+        // print("Sentence Typed: " + sentenceTyped);
 
 
     
-        electricityAnimationController.AddToList(ElectricWireEnum.PlugToKey, currentEncryptedText);
-        electricityAnimationController.AddToList(ElectricWireEnum.KeyToBulb, currentEncryptedText);    
-
+        // electricityAnimationController.AddToList(ElectricWireEnum.PlugToKey, currentEncryptedText);
+        // electricityAnimationController.AddToList(ElectricWireEnum.KeyToBulb, currentEncryptedText);    
+        // electricityAnimationController.AddToList(ElectricWireEnum.Bulb, currentEncryptedText);
     }
 
     public void KeyRelease()
     {
-        AnimateActuatorBarReleasing();
+        // AnimateActuatorBarReleasing();
         // ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
         // print(state);
         // actuatorBar.AnimateActuatorBarRelease(state);
-        print($"TURNED LIGHT {currentEncryptedText} OFF {allKeys[currentEncryptedText]}");
-        allKeys[currentEncryptedText].LampOff();
-        electricityAnimationController.KeyRelease();        
+        // print($"TURNED LIGHT {currentEncryptedText} OFF {allKeys[currentEncryptedText]}");
+        // allKeys[currentEncryptedText].LampOff();
+        // electricityAnimationController.KeyRelease();        
+    }
+
+    public void LampOn(int lampIndex)
+    {
+        allKeys[lampIndex].LampOn();
+    }
+
+    public void LampOff(int lampIndex)
+    {
+        allKeys[lampIndex].LampOff();
     }
 
     public void ClearRotorSelected()
@@ -237,39 +254,28 @@ public class GameManagerScript : MonoBehaviour
         PlugBoard[plug2Int] = plug2Int;
     }
 
+    public void AddNewEncryptedLetter(string keyPressed)
+    {
+        int currentEncryptedText = FindEncryptedText(keyPressed);
+        sentenceTyped += (char)(currentEncryptedText + 'A');
+    }
+
     public int FindEncryptedText(string keyPressed)
     {
         int plainChar = keyPressed[0] - 'A';
 
-        // electricityController.PowerOnWirePlugBoardIn(plainChar);
-        // plugBoardWire1 = plainChar;
-
-        electricityAnimationController.AddToList(ElectricWireEnum.PlugIn, plainChar);
-
         int plugBoard1 = GetPlugBoardCipher(plainChar);
-        // electricityController.PowerOnWirePlugBoardOut(plugBoard1);
-        // plugBoardWire2 = plugBoard1;
-        electricityAnimationController.AddToList(ElectricWireEnum.PlugOut, plugBoard1);
 
         int pass1 = rotor1.GetPlainToCipher(plugBoard1);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor1, pass1);
         int pass2 = rotor2.GetPlainToCipher(pass1);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor2, pass2);
         int pass3 = rotor3.GetPlainToCipher(pass2);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor3, pass3);
         int pass4 = Reflector[pass3];
         int pass5 = rotor3.GetCipherToPlain(pass4);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor3Reverse, pass5);
         int pass6 = rotor2.GetCipherToPlain(pass5);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor2Reverse, pass6);
         int pass7 = rotor1.GetCipherToPlain(pass6);
-         electricityAnimationController.AddToList(ElectricWireEnum.Rotor1Reverse, pass7);
-
-        electricityAnimationController.AddToList(ElectricWireEnum.PlugInReverse, pass7);
 
         int plugBoard2 = GetPlugBoardCipher(pass7);
 
-        electricityAnimationController.AddToList(ElectricWireEnum.PlugOutReverse, plugBoard2);
         
         // print("Key Pressed: " + (char)(plainChar + 'A') + " (" + plainChar + ")");
 
@@ -287,10 +293,87 @@ public class GameManagerScript : MonoBehaviour
 
         // print("Pass 7 (Rotor 1 Reverse): " + (char)(pass7 + 'A') + " (" + pass7 + ") Current Sentence = " + sentenceTyped);
 
-        print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A') + " Current Sentence = " + sentenceTyped);
+        // print("PLAIN TEXT: " + (char)(plainChar + 'A') + "    CIPHER TEXT:    " + (char)(pass7 + 'A') + " Current Sentence = " + sentenceTyped);
         
         return plugBoard2;
     }
+
+
+     public (List<ElectricWireEnum> _enumList, List<int> _intList) ReturnEncryptedPath(int plainChar)
+    {
+
+        List<ElectricWireEnum> enumList = new List<ElectricWireEnum>();
+        List<int> intList = new List<int>();
+
+        // electricityController.PowerOnWirePlugBoardIn(plainChar);
+        // plugBoardWire1 = plainChar;
+
+        enumList.Add(ElectricWireEnum.KeyToPlug);
+        intList.Add(plainChar);
+
+        enumList.Add(ElectricWireEnum.PlugIn);
+        intList.Add(plainChar);
+
+        int plugBoard1 = GetPlugBoardCipher(plainChar);
+        if (plugBoard1 != plainChar) {} // DO the rope animation
+        
+        enumList.Add(ElectricWireEnum.PlugOut);
+        intList.Add(plugBoard1);
+
+        enumList.Add(ElectricWireEnum.InputWheel);
+        intList.Add(plugBoard1);
+
+        int pass1 = rotor1.GetPlainToCipher(plugBoard1);
+        enumList.Add(ElectricWireEnum.Rotor1);
+        intList.Add(pass1);
+
+        int pass2 = rotor2.GetPlainToCipher(pass1);
+        enumList.Add(ElectricWireEnum.Rotor2);
+        intList.Add(pass2);
+
+        int pass3 = rotor3.GetPlainToCipher(pass2);
+        enumList.Add(ElectricWireEnum.Rotor3);
+        intList.Add(pass3);
+
+        int pass4 = Reflector[pass3];
+        enumList.Add(ElectricWireEnum.Reflector);
+        intList.Add(pass4);
+
+        int pass5 = rotor3.GetCipherToPlain(pass4);
+        enumList.Add(ElectricWireEnum.Rotor3Reverse);
+        intList.Add(pass5);
+
+        int pass6 = rotor2.GetCipherToPlain(pass5);
+        enumList.Add(ElectricWireEnum.Rotor2Reverse);
+        intList.Add(pass6);
+
+        int pass7 = rotor1.GetCipherToPlain(pass6);
+        enumList.Add(ElectricWireEnum.Rotor1Reverse);
+        intList.Add(pass7);
+
+        enumList.Add(ElectricWireEnum.InputWheelReverse);
+        intList.Add(pass7);
+
+        enumList.Add(ElectricWireEnum.PlugInReverse);
+        intList.Add(pass7);
+
+        int plugBoard2 = GetPlugBoardCipher(pass7);
+        if (plugBoard2 != pass7) {} // Add the rope animation
+        enumList.Add(ElectricWireEnum.PlugOutReverse);
+        intList.Add(plugBoard2);
+
+        enumList.Add(ElectricWireEnum.PlugToKey);
+        intList.Add(plugBoard2);
+
+        enumList.Add(ElectricWireEnum.KeyToBulb);
+        intList.Add(plugBoard2);
+
+        enumList.Add(ElectricWireEnum.Bulb);
+        intList.Add(plugBoard2);
+    
+        return (enumList, intList);
+    }
+
 
     public Dictionary<int, int> Reflector = new Dictionary<int, int>()
     {

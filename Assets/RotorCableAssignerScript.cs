@@ -20,7 +20,7 @@ public class RotorCableAssignerScript : MonoBehaviour
     private void Start()
     {
         AssignRopes();
-        print("CIPHER TEXT + " + cipherKey);
+        // print("CIPHER TEXT + " + cipherKey);
     }
 
     public void AssignRopes()
@@ -54,7 +54,7 @@ public class RotorCableAssignerScript : MonoBehaviour
             if (ropeComponent != null)
             {
                 // Set points and force instant mesh recalculation
-                print($"ropeComponent = {ropeComponent},    startChild = {startChild},      endChild = {endChild},        {cipherKey}");
+                // print($"ropeComponent = {ropeComponent},    startChild = {startChild},      endChild = {endChild},        {cipherKey}");
                 ropeComponent.SetStartPoint(startChild, instantAssign: true);
                 ropeComponent.SetEndPoint(endChild, instantAssign: true);
                 ropeComponent.RecalculateRope();

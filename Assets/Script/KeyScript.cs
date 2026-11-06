@@ -12,9 +12,9 @@ public class KeyScript : MonoBehaviour
 
     [Header("Key Details")]
     [SerializeField] string keyPress;
-    private bool mousePressingKey = false;
+    public bool mousePressingKey = false;
 
-    private bool spinRotorBool = false;
+    private bool pressing = false;
 
     [Header("TextBox")]
     [SerializeField] TextMeshPro keyText;
@@ -28,10 +28,7 @@ public class KeyScript : MonoBehaviour
     private bool lightOn = false;
     public bool lightOnGameManager = false;
     private bool blackFlapUp = false;
-    [SerializeField] GameObject lampBulbObject;
-    private Renderer lampBulbObjectRenderer;
-    public Material glassMaterial;
-
+    [SerializeField] BulbScript lightBulbScript;
 
 
 
@@ -43,8 +40,6 @@ public class KeyScript : MonoBehaviour
         keyText.text = keyPress.ToUpper();
         LightBulbText.text = keyPress.ToUpper();
         lampBulbRenderer = lampBulbPlane.GetComponent<Renderer>();
-        if(lampBulbObject == null) return;
-        lampBulbObjectRenderer = lampBulbObject.GetComponent<Renderer>();
     }   
 
     // Update is called once per frame
@@ -64,21 +59,16 @@ public class KeyScript : MonoBehaviour
         if (keyInput || mousePressingKey)
         {
             Pressing();
-            if (!spinRotorBool)
-            {
-                GameManagerScript.Instance.KeyPress(keyPress);
-                spinRotorBool = true;
-            }
+            if (!pressing) KeyInputManagerScript.Instance.KeyPress(keyPress);
+            pressing = true;
         }
-        else
+        else if (pressing)
         {
             Releasing();
-            if (spinRotorBool)
-            {
-                GameManagerScript.Instance.KeyRelease();
-            }
-            spinRotorBool = false;
+            KeyInputManagerScript.Instance.KeyRelease(keyPress);
+            pressing = false;
         }
+        
     }
 
     public void Pressing()
@@ -138,12 +128,14 @@ public class KeyScript : MonoBehaviour
     public void LampOn()
     {   if (!GameManagerScript.Instance.powerOn) return;
         LampOnPlane();
+        LampOnBulb();
     }
 
 
     public void LampOff()
     {
         LampOffPlane();
+        LampOffBulb();
     }
 
 
@@ -156,6 +148,7 @@ public class KeyScript : MonoBehaviour
             // If light is on when power off, then turn it off
             {
                 LampOffPlane();
+                LampOffBulb();
             }
             return;
         }
@@ -164,14 +157,14 @@ public class KeyScript : MonoBehaviour
         {
             // if black flap is down, then light up plane
             if (!blackFlapUp) LampOnPlane();
-            // LampOnBulb();
+            LampOnBulb();
         }
         // if nothing pressed
         if (lightOn)
         {
             // If light still on, then turn it off
             LampOffPlane();
-            // LampOffBulb();
+            LampOffBulb();
         }
     }
 
@@ -189,15 +182,11 @@ public class KeyScript : MonoBehaviour
     
     public void LampOnBulb()
     {
-        if(lampBulbObjectRenderer == null) return;
-        lampBulbObjectRenderer.material = lightMaterial;
-        lightOn = true;
+        lightBulbScript.LightOn();
     }
     public void LampOffBulb()
     {
-        if(lampBulbObjectRenderer == null) return;
-        lampBulbObjectRenderer.material = glassMaterial;
-        lightOn = false;
+        lightBulbScript.LightOff();
     }
 
     public void UpdateFlapUpState(bool flapUp)

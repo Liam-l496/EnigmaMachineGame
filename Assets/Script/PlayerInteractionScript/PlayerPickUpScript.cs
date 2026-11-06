@@ -83,7 +83,7 @@ public class PlayerPickUpScript : MonoBehaviour
             print("SKIP UPDATE + " + skipUpdate);  
             return;
         }
-        print("WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
+        // print("WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
 
         float scrollInput = Input.GetAxis("Mouse ScrollWheel");
         if (scrollInput != 0) ZoomObject(scrollInput);
@@ -91,10 +91,10 @@ public class PlayerPickUpScript : MonoBehaviour
 
     void LateUpdate()
     {
-        print("LATE UPDATE WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
+        // print("LATE UPDATE WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
         if (somethingElseClicked && wrongObjectClicked)
         {
-            print("SOMETHING ELSE CLICKED + " + somethingElseClicked);
+            // print("SOMETHING ELSE CLICKED + " + somethingElseClicked);
             playerInteraction.mouseClick = true;
             playerInteraction.currentInteractable = anotherInteractableClicked;
             anotherInteractableClicked = null;

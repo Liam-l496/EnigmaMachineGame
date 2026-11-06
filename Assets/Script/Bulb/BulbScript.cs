@@ -13,6 +13,10 @@ public class BulbScript : MonoBehaviour
     private Renderer lampBulbRenderer;
     public Material glassMaterial;
     public Material lightUpMaterial;
+
+    public GameObject metalFilament;
+    private Renderer metalFilamentRenderer;
+    public Material metalFilamentMaterial;
     
     [Header("Bulb State")]
     public bool lightOn = false;
@@ -29,6 +33,8 @@ public class BulbScript : MonoBehaviour
         interactable = GetComponent<Interactable>();
         lampBulbRenderer = glassBulb.GetComponent<Renderer>();
         bulbTestingInteractable = bulbTestingObject.GetComponent<Interactable>();
+        metalFilamentRenderer = metalFilament.GetComponent<Renderer>();
+    
     }
 
     // Update is called once per frame
@@ -89,16 +95,19 @@ public class BulbScript : MonoBehaviour
     {
         if (broken)
         {
-            lampBulbRenderer.material = glassMaterial;
+            // lampBulbRenderer.material = glassMaterial;
+            LightOff();
             return;
         } 
         if (lightOn)
         {
-            lampBulbRenderer.material = lightUpMaterial;
+            // lampBulbRenderer.material = lightUpMaterial;
+            LightOn();
         }
         else
         {
-            lampBulbRenderer.material = glassMaterial;
+            // lampBulbRenderer.material = glassMaterial;
+            LightOff();
         }
     }
 
@@ -110,5 +119,17 @@ public class BulbScript : MonoBehaviour
             PlayerPickUpScript.Instance.wrongObjectClicked = true;
         }
         return lampTesting;
+    }
+
+    public void LightOn()
+    {
+        lampBulbRenderer.material = lightUpMaterial;
+        metalFilamentRenderer.material = lightUpMaterial;
+    }
+
+    public void LightOff()
+    {
+        lampBulbRenderer.material = glassMaterial;
+        metalFilamentRenderer.material = metalFilamentMaterial;
     }
 }

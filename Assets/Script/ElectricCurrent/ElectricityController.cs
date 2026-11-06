@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -27,7 +28,7 @@ public class ElectricityController : MonoBehaviour
     public SplineElectricityWire[] wireKeyToPlugBoard;
     private Dictionary<int, bool> dictionaryKeyToPlugBoard = new Dictionary<int, bool>();
 
-    [Header("LightBulb Wire")]
+    [Header("Key to LightBulb Wire")]
     public SplineElectricityWire[] wireBulb;
     private Dictionary<int, bool> dictionaryBulb = new Dictionary<int, bool>();
 
@@ -35,9 +36,13 @@ public class ElectricityController : MonoBehaviour
     public SplineElectricityWire[] wirePlugBoardIn;
     private Dictionary<int, bool> dictionaryPlugBoardIn = new Dictionary<int, bool>();
 
-    [Header("Plug Board Wire IN")]
+    [Header("Plug Board Wire OUT")]
     public SplineElectricityWire[] wirePlugBoardOut;
     private Dictionary<int, bool> dictionaryPlugBoardOut = new Dictionary<int, bool>();
+
+    [Header("Light Bulb Wire")]
+    public SplineElectricityWire[] wireToBulb;
+    private Dictionary<int, bool> dictionaryToBulb = new Dictionary<int, bool>();
 
 
 
@@ -56,6 +61,7 @@ public class ElectricityController : MonoBehaviour
             dictionaryBulb[wireIndex] = false;
             dictionaryPlugBoardIn[wireIndex] = false;
             dictionaryPlugBoardOut[wireIndex] = false;
+            dictionaryToBulb[wireIndex] = false;
             wireIndex++;
         }
         UpdateEnabledState();
@@ -66,91 +72,154 @@ public class ElectricityController : MonoBehaviour
 
 /// ////////////////////////////////////////////////////
 
-    public void PowerOnWirePlugBoard(int wireIndex, bool comingIn=false)
+    public void KillWire(ElectricWireEnum enumInput, int wireIndex) {
+        SplineElectricityWire[] wire;
+        Dictionary<int, bool> dictionary;
+        switch (enumInput)
+        {
+            case ElectricWireEnum.KeyToPlug:
+            case ElectricWireEnum.PlugToKey:
+                wire = wireKeyToPlugBoard;
+                dictionary = dictionaryKeyToPlugBoard;
+                break;
+            case ElectricWireEnum.PlugIn:
+            case ElectricWireEnum.PlugOutReverse:
+                wire = wirePlugBoardIn;
+                dictionary = dictionaryPlugBoardIn;
+                break;
+            case ElectricWireEnum.PlugOut:
+            case ElectricWireEnum.PlugInReverse:
+                wire = wirePlugBoardOut;
+                dictionary = dictionaryPlugBoardOut;
+                break;
+            case ElectricWireEnum.KeyToBulb:
+                wire = wireBulb;
+                dictionary = dictionaryBulb;
+                break;
+            case ElectricWireEnum.Bulb:
+                wire = wireToBulb;
+                dictionary = dictionaryToBulb;
+                break;
+            default:
+                return;
+        }
+        
+        wire[wireIndex].TurnElectricityOffImmediately();
+        dictionary[wireIndex] = false;
+    }
+
+
+
+/// ////////////////////////////////////////////////////
+
+    public SplineElectricityWire PowerOnWirePlugBoard(int wireIndex, bool comingIn=false)
     {
         SplineElectricityWire wire = wireKeyToPlugBoard[wireIndex];
         dictionaryKeyToPlugBoard[wireIndex] = true;
         UpdateEnabledState();
         wire.SetReverseDirection(comingIn, true);
         wire.StartElectricity();
-        currentWire = wire;
+        return wire;
     }
 
-    public void PowerOffWirePlugBoard(int wireIndex)
+    public SplineElectricityWire PowerOffWirePlugBoard(int wireIndex)
     {
         SplineElectricityWire wire = wireKeyToPlugBoard[wireIndex];
         dictionaryKeyToPlugBoard[wireIndex] = false;
-        wire.SetReverseDirection(false);
         wire.StopElectricity();
         UpdateEnabledState();
-        currentWireOff = wire;
+        return wire;
     }
 
 /// ////////////////////////////////////////////////////
 
-    public void PowerOnWireLightBulb(int wireIndex)
+    public SplineElectricityWire PowerOnWireLightBulb(int wireIndex)
     {
         SplineElectricityWire wire = wireBulb[wireIndex];
         dictionaryBulb[wireIndex] = true;
         UpdateEnabledState();
         wire.StartElectricity();
-        currentWire = wire;
+        return wire;
     }
 
-    public void PowerOffWireLightBulb(int wireIndex)
+    public SplineElectricityWire PowerOffWireLightBulb(int wireIndex)
     {
         SplineElectricityWire wire = wireBulb[wireIndex];
         dictionaryBulb[wireIndex] = false;
         wire.StopElectricity();
         UpdateEnabledState();
-        currentWireOff = wire;
+        return wire;
     }
 
 /// ////////////////////////////////////////////////////
 
-    public void PowerOnWirePlugBoardIn(int wireIndex, bool comingIn=false)
+    public SplineElectricityWire PowerOnWirePlugBoardIn(int wireIndex, bool comingIn=false)
     {
         SplineElectricityWire wire = wirePlugBoardIn[wireIndex];
         dictionaryPlugBoardIn[wireIndex] = true;
         UpdateEnabledState();
         wire.SetReverseDirection(comingIn, true);
         wire.StartElectricity();
-        currentWire = wire;
+        return wire;
     }
 
-    public void PowerOffWirePlugBoardIn(int wireIndex)
+    public SplineElectricityWire PowerOffWirePlugBoardIn(int wireIndex)
     {
         SplineElectricityWire wire = wirePlugBoardIn[wireIndex];
         dictionaryPlugBoardIn[wireIndex] = false;
-        wire.SetReverseDirection(false);
         wire.StopElectricity();
         UpdateEnabledState();
-        currentWireOff = wire;
+        return wire;
     }
 
 /// ////////////////////////////////////////////////////
 
-    public void PowerOnWirePlugBoardOut(int wireIndex, bool comingIn=false)
+    public SplineElectricityWire PowerOnWirePlugBoardOut(int wireIndex, bool comingIn=false)
     {
         SplineElectricityWire wire = wirePlugBoardOut[wireIndex];
         dictionaryPlugBoardOut[wireIndex] = true;
         UpdateEnabledState();
         wire.SetReverseDirection(comingIn, true);
         wire.StartElectricity();
-        currentWire = wire;
+        return wire;
     }
 
-    public void PowerOffWirePlugBoardOut(int wireIndex)
+    public SplineElectricityWire PowerOffWirePlugBoardOut(int wireIndex)
     {
         SplineElectricityWire wire = wirePlugBoardOut[wireIndex];
         dictionaryPlugBoardOut[wireIndex] = false;
-        wire.SetReverseDirection(false);
         wire.StopElectricity();
         UpdateEnabledState();
-        currentWireOff = wire;
+        return wire;
     }
 
 /// ////////////////////////////////////////////////////
+
+    public SplineElectricityWire PowerOnWireToBulb(int wireIndex)
+    {
+        SplineElectricityWire wire = wireToBulb[wireIndex];
+        dictionaryPlugBoardOut[wireIndex] = true;
+        UpdateEnabledState();
+        wire.StartElectricity();
+        return wire;
+    }
+
+    public SplineElectricityWire PowerOffWireToBulb(int wireIndex)
+    {
+        SplineElectricityWire wire = wireToBulb[wireIndex];
+        dictionaryPlugBoardOut[wireIndex] = false;
+        wire.StopElectricity();
+        UpdateEnabledState();
+        return wire;
+    }
+
+
+
+
+
+
+/// ////////////////////////////////////////////////////
+
 
     public void UpdateEnabledState()
     {
