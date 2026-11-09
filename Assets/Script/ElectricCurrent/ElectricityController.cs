@@ -44,6 +44,13 @@ public class ElectricityController : MonoBehaviour
     public SplineElectricityWire[] wireToBulb;
     private Dictionary<int, bool> dictionaryToBulb = new Dictionary<int, bool>();
 
+    [Header("Battery Wires")]
+    public SplineElectricityWire[] wireBattery;
+    // in order: Battery, bottom, ladderBT, middle, ladderMT, top, returnWire
+
+    [Header("Key Input Manager Script")]
+    public KeyInputManagerScript keyInputManagerScript;
+
 
 
     // public void EmergencyPowerOff()
@@ -69,6 +76,7 @@ public class ElectricityController : MonoBehaviour
         // test1.StartElectricity();
         // test2.StartElectricity();
     }
+
 
 /// ////////////////////////////////////////////////////
 
@@ -109,9 +117,26 @@ public class ElectricityController : MonoBehaviour
     }
 
 
-
 /// ////////////////////////////////////////////////////
 
+   public SplineElectricityWire PowerOnBatteryWire(int wireIndex)
+    {
+        SplineElectricityWire wire = wireBattery[wireIndex];
+        if (!wire.IsOn) wire.StartElectricity();
+        return wire;
+    }
+
+    public SplineElectricityWire PowerOffBatteryWire(int wireIndex)
+    {
+        SplineElectricityWire wire = wireBattery[wireIndex];
+        if (!keyInputManagerScript.noKeyPressed) return null;
+        wire.StopElectricity();
+        return wire;
+    }
+
+
+
+/// ////////////////////////////////////////////////////
     public SplineElectricityWire PowerOnWirePlugBoard(int wireIndex, bool comingIn=false)
     {
         SplineElectricityWire wire = wireKeyToPlugBoard[wireIndex];

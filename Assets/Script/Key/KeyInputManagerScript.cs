@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-using System.Linq; // <-- Add this line
+using System.Linq;
 
 public class KeyInputManagerScript : MonoBehaviour
 {
@@ -68,7 +68,10 @@ public class KeyInputManagerScript : MonoBehaviour
 
     public void KeyPress(string keyPressed)
     {
-        GameManagerScript.Instance.SpinRotor();
+        if (PlayerPickUpScript.Instance.heldObject) return;
+        if (noKeyPressed) {
+            GameManagerScript.Instance.SpinRotor();
+        }
         GameManagerScript.Instance.EXTERNALAnimateActuatorBarPressing();
         
         int charInt = keyPressed[0] - 'A';
@@ -89,6 +92,8 @@ public class KeyInputManagerScript : MonoBehaviour
 
     public void KeyRelease(string keyReleased)
     {
+        if (PlayerPickUpScript.Instance.heldObject) return;
+
         GameManagerScript.Instance.AnimateActuatorBarReleasing();
 
         int charInt = keyReleased[0] - 'A';

@@ -131,11 +131,13 @@ public class RotorSwappingScript : MonoBehaviour
         {
             print("LIFTING Up");
             rotorMasterScript.UpdateEndPosition(RotorPositionLifted);
+            // rotorMasterScript.endAngle = rotorMasterScript.liftUpAngle;
         }
         else
         {
             print("LIFTING Down");
             rotorMasterScript.UpdateEndPosition(RotorPositionStationary);
+            // rotorMasterScript.endAngle = rotorMasterScript.originalAngle;
         }
         rotorMasterScript.InAnimation = true;
     }

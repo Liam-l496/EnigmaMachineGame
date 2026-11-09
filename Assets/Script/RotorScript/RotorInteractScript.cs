@@ -84,7 +84,7 @@ public class RotorInteractScript: MonoBehaviour
 
     void Update()
     {
-        EnableCables();
+        // EnableCables();
         if (inAnimationLeft || inAnimationRight)
         {
             SetPosition();
@@ -144,6 +144,7 @@ public class RotorInteractScript: MonoBehaviour
             colliderInnerTube.enabled = true;
             colliderOriginal.enabled = false;
             colliderSwapping.enabled = false;
+            cables.SetActive(true);
         }
         else if (interactable.runEndingScript)
         {
@@ -157,6 +158,7 @@ public class RotorInteractScript: MonoBehaviour
             colliderInnerTube.enabled = false;
             colliderOriginal.enabled = true;
             colliderSwapping.enabled = true;
+            cables.SetActive(false);
         }
     }
 
@@ -237,14 +239,14 @@ public class RotorInteractScript: MonoBehaviour
 
     public void EnableCables()
     {
-        if (!open && !InAnimation())
-        {
-            cables.SetActive(true);
-        }
-        else if (open && !cables.activeSelf)
-        {
-            cables.SetActive(true);
-        }
+        // if (!open && !InAnimation())
+        // {
+        //     cables.SetActive(true);
+        // }
+        // else if (open && !cables.activeSelf)
+        // {
+        //     cables.SetActive(true);
+        // }
     }
 
 }

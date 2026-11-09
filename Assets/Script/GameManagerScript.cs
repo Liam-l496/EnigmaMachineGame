@@ -6,6 +6,8 @@ using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
 
+using UnityEngine.InputSystem; // 1. Add this namespace
+
 public class GameManagerScript : MonoBehaviour
 {
 
@@ -24,6 +26,8 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] RotorMasterScript rotor1;
     [SerializeField] RotorMasterScript rotor2;
     [SerializeField] RotorMasterScript rotor3;
+    [SerializeField] RotorMasterScript rotor4;
+    [SerializeField] RotorMasterScript rotor5;
     [SerializeField] int notchRequired = 10;
     bool spinRotor2 = false;
     bool spinRotor3 = false;
@@ -60,7 +64,6 @@ public class GameManagerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
     }
 
     public void SpinRotor()
@@ -141,39 +144,12 @@ public class GameManagerScript : MonoBehaviour
 
     public void KeyPress(string keyPressed)
     {
-        // rotor1.SpinRotorOnce();
-        // if (powerOn) {
-        //     sentenceTyped += keyPressed;
-        // }
-        // SpinRotor();
-        // AnimateActuatorBarPressing(spinRotor2, spinRotor3);
-        // ActuatorBarScript.AnimationState state = ActuatorBarRotateState(spinRotor2, spinRotor3);
-        // print(state);
-        // actuatorBar.AnimateActuatorBarRotate(state);
-        // electricityAnimationController.AddToList(ElectricWireEnum.KeyToPlug, keyPressed[0] - 'A');
         currentEncryptedText = FindEncryptedText(keyPressed);
         sentenceTyped += (char)(currentEncryptedText + 'A');
-
-        // print($"TURNED LIGHT {currentEncryptedText} ON {allKeys[currentEncryptedText]}");
-        // allKeys[currentEncryptedText].LampOn();
-        // print("Sentence Typed: " + sentenceTyped);
-
-
-    
-        // electricityAnimationController.AddToList(ElectricWireEnum.PlugToKey, currentEncryptedText);
-        // electricityAnimationController.AddToList(ElectricWireEnum.KeyToBulb, currentEncryptedText);    
-        // electricityAnimationController.AddToList(ElectricWireEnum.Bulb, currentEncryptedText);
     }
 
     public void KeyRelease()
-    {
-        // AnimateActuatorBarReleasing();
-        // ActuatorBarScript.AnimationState state = ActuatorBarReleaseState();
-        // print(state);
-        // actuatorBar.AnimateActuatorBarRelease(state);
-        // print($"TURNED LIGHT {currentEncryptedText} OFF {allKeys[currentEncryptedText]}");
-        // allKeys[currentEncryptedText].LampOff();
-        // electricityAnimationController.KeyRelease();        
+    {     
     }
 
     public void LampOn(int lampIndex)
@@ -208,6 +184,14 @@ public class GameManagerScript : MonoBehaviour
         {
             rotor3 = rotor;
         }
+        else if (rotor.rotorPosition == 4)
+        {
+            rotor4 = rotor;
+        }
+        else if (rotor.rotorPosition == 5)
+        {
+            rotor5 = rotor;
+        }
     }
 
     public RotorMasterScript ReturnRotor(int rotorPosition)
@@ -222,7 +206,17 @@ public class GameManagerScript : MonoBehaviour
         }
         else if (rotorPosition == 3)
         {
+            print("3 returned");
             return rotor3;
+        }
+        else if (rotorPosition == 4)
+        {
+            print("4 returned");
+            return rotor4;
+        }
+        else if (rotorPosition == 5)
+        {
+            return rotor5;
         }
         return null;
     }
@@ -302,11 +296,13 @@ public class GameManagerScript : MonoBehaviour
      public (List<ElectricWireEnum> _enumList, List<int> _intList) ReturnEncryptedPath(int plainChar)
     {
 
-        List<ElectricWireEnum> enumList = new List<ElectricWireEnum>();
-        List<int> intList = new List<int>();
+        List<ElectricWireEnum> enumList;
+        List<int> intList;
 
         // electricityController.PowerOnWirePlugBoardIn(plainChar);
         // plugBoardWire1 = plainChar;
+
+        (enumList, intList) = GetBatteryWire(plainChar);
 
         enumList.Add(ElectricWireEnum.KeyToPlug);
         intList.Add(plainChar);
@@ -371,6 +367,36 @@ public class GameManagerScript : MonoBehaviour
         enumList.Add(ElectricWireEnum.Bulb);
         intList.Add(plugBoard2);
     
+        return (enumList, intList);
+    }
+
+    public (List<ElectricWireEnum> _enumList, List<int> _intList) GetBatteryWire(int plainChar)
+    {
+        List<ElectricWireEnum> enumList = new List<ElectricWireEnum>();
+        List<int> intList = new List<int>();
+        enumList.Add(ElectricWireEnum.Battery);
+        intList.Add(0);
+        enumList.Add(ElectricWireEnum.Battery);
+        intList.Add(1);
+
+        if (plainChar is 0 or 18 or 3 or 5 or 6 or 7 or 9 or 10)
+        {
+            enumList.Add(ElectricWireEnum.Battery);
+            intList.Add(2);
+            enumList.Add(ElectricWireEnum.Battery);
+            intList.Add(3);
+        }
+        else if (plainChar is 15 or 24 or 23 or 2 or 21 or 1 or 13 or 12 or 11)
+        {
+            enumList.Add(ElectricWireEnum.Battery);
+            intList.Add(2);
+            enumList.Add(ElectricWireEnum.Battery);
+            intList.Add(4);
+            enumList.Add(ElectricWireEnum.Battery);
+            intList.Add(5);
+        }
+        
+        
         return (enumList, intList);
     }
 

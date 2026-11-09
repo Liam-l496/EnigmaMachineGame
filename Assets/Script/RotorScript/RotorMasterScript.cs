@@ -22,6 +22,7 @@ public class RotorMasterScript : MonoBehaviour
     public RotorInteractScript rotorInteractScript;
     public GameObject cables;
     public RotorCableAssignerScript rotorCableAssignerScript;
+    public TextMeshPro rotorNameText;
 
 
     // [Header("Interacting Variables")]
@@ -33,14 +34,19 @@ public class RotorMasterScript : MonoBehaviour
     public bool WindowFlapUp { get; set; } = false;
     public bool Transitioning { get; set; } = false;
     public int rotorPosition;
+    public string rotorName;
 
 
     // For Animation
     [Header("Animation")]
     public Vector3 currentVelocity;
     public Vector3 endPosition; 
+    public Quaternion liftUpAngle;
+    public Quaternion originalAngle;
+    public Quaternion endAngle;
     public float stoppingDistance = 0.01f;
     public float smoothTime = 0.5f;
+    public float smoothTimeRotation = 0.5f;
     
 
     void Start()
@@ -50,14 +56,23 @@ public class RotorMasterScript : MonoBehaviour
         rotorSwappingScript = GetComponent<RotorSwappingScript>();
         rotorEncryptionScript  = GetComponent<RotorEncryptionScript>();
         rotorInteractScript= GetComponent<RotorInteractScript>();
-        cables.SetActive(true);
         rotorCableAssignerScript = GetComponent<RotorCableAssignerScript>();
         // = GetComponent<>();
+        print("DISABLING ");
+        DisableCables();
+        print("DISABLED");
+        
+        rotorNameText.enabled = false;
+        rotorNameText.text = rotorName;
+
+        // originalAngle = transform.rotation;
+        // liftUpAngle = Quaternion.Euler(336.8394f, 180f, 180f);
+        // endAngle = originalAngle;
     }
 
     void Update()
     {
-
+        
     }
 
     void LateUpdate()
@@ -109,6 +124,12 @@ public class RotorMasterScript : MonoBehaviour
             smoothTime
         );
 
+        // transform.rotation = Quaternion.Slerp(
+        //     transform.rotation,
+        //     endAngle,
+        //     Time.deltaTime * smoothTimeRotation
+        // );
+
         float distance = Vector3.Distance(transform.position, endPosition);
         if (distance <= stoppingDistance)
         {
@@ -138,10 +159,12 @@ public class RotorMasterScript : MonoBehaviour
         if (flapUp)
         {
             interactable.UpdateCanPickUp(true);
+            rotorScript.enabled = true;
         }
         else
         {
             interactable.UpdateCanPickUp(false);
+            rotorScript.enabled = false;
         }
     }
 
@@ -155,12 +178,18 @@ public class RotorMasterScript : MonoBehaviour
             rotorInteractScript.enabled = false;
             rotorSwappingScript.enabled = true;
             rotorSwappingScript.RotorSwappingAnimationState(reflectorHolding);
+            rotorNameText.enabled = true;
+            rotorScript.enabled = false;
+
         }
         else
         {
             rotorSwappingScript.RotorSwappingAnimationState(reflectorHolding);
             rotorSwappingScript.enabled = false;
             rotorInteractScript.enabled = true;
+            rotorNameText.enabled = false;
+            rotorScript.enabled = true;
+
         }
     }
 
@@ -189,6 +218,16 @@ public class RotorMasterScript : MonoBehaviour
         {
             print("Transition stopped now");
         }
+    }
+
+    public void ActivateCables()
+    {
+        cables.SetActive(true);
+    }
+
+    public void DisableCables()
+    {
+        cables.SetActive(false);
     }
 
 

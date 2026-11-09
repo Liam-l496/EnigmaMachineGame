@@ -15,13 +15,17 @@ public class RotorSwappingPointScript : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        print($"HIT SOMETHIGN {swappingIndex}");
         if(other.CompareTag("RotorSwappingPoint"))
         {
             Transform swappingPoint = other.GetComponent<Transform>();
             RotorSwappingScript swappingRotor = swappingPoint.parent.gameObject.GetComponent<RotorSwappingScript>();
             int swappingRotorIndex = swappingRotor.rotorMasterScript.rotorPosition;
+            print($"OTHER SWAPPING ROTOR INDEX: {swappingRotorIndex}        {swappingIndex}");
             if (swappingRotorIndex == swappingIndex) return;
+            print("GETTING ROTOR OBJECT");
             RotorSwappingScript adjacentRotor = gameManagerScript.ReturnRotor(swappingIndex).GetComponent<RotorSwappingScript>();
+            print("NOW SWAPPING ROTOR OBJECT");
             SwapPosition(swappingRotor, adjacentRotor);
         }
     }
@@ -30,6 +34,7 @@ public class RotorSwappingPointScript : MonoBehaviour
     {
         RotorMasterScript rotorMaster1 = movingRotor.rotorMasterScript;
         RotorMasterScript rotorMaster2 = stationaryRotor.rotorMasterScript;
+        print("ROTOR SWAPPING LINE 30");
 
         Transform tempPositionLifted = stationaryRotor.RotorPositionLifted;
         Transform tempSwappingTop = stationaryRotor.RotorPositionSwappingTop;
