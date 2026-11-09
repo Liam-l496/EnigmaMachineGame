@@ -331,7 +331,7 @@ private void Update()
 
     private void PlugBoardPlugAnimation()
     {
-        print($"endPosition = {endPosition}");
+        // print($"endPosition = {endPosition}");
         transform.position = Vector3.SmoothDamp(
             transform.position,
             endPosition,

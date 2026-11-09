@@ -48,13 +48,13 @@ public class KeyInputManagerScript : MonoBehaviour
         CreateController(index);
         
         var (tempEnums, tempInts) = GameManagerScript.Instance.ReturnEncryptedPath(index);
-        print($"COUNT {tempEnums.Count} + {tempInts.Count}");
+        // print($"COUNT {tempEnums.Count} + {tempInts.Count}");
         
         // Create new list copies so the controller owns its own data
         controllers[index].wireAnimationOrderList = new List<ElectricWireEnum>(tempEnums);
         controllers[index].wireIndexList = new List<int>(tempInts);
-        
-        keyToBulbDictionary[index] = tempInts[tempInts.Count - 1];
+        // PrintList(tempInts);
+        keyToBulbDictionary[index] = tempInts[tempInts.Count - 2];
     }
 
     public void CleanUpController(int index)
@@ -86,8 +86,10 @@ public class KeyInputManagerScript : MonoBehaviour
             GameManagerScript.Instance.AddNewEncryptedLetter(keyPressed);
         }
         CreateElectricPath(charInt);
+        // PrintDictionary(keyToBulbDictionary);
+        // print($"FORWARD  {charInt}    {keyToBulbDictionary[charInt]}");
         GameManagerScript.Instance.LampOn(keyToBulbDictionary[charInt]);
-        PrintControllerArray();
+        // PrintControllerArray();
     }
 
     public void KeyRelease(string keyReleased)
@@ -98,7 +100,7 @@ public class KeyInputManagerScript : MonoBehaviour
 
         int charInt = keyReleased[0] - 'A';
 
-        PrintControllerArray();
+        // PrintControllerArray();
 
         keyHeldDownList.Remove(charInt);
 
@@ -129,4 +131,26 @@ public class KeyInputManagerScript : MonoBehaviour
         Debug.Log($"--- Controller Array ({controllers.Length} items) ---\n{formattedOutput}");
     }
 
+    public static void PrintList(List<int> list, string label = "List")
+    {
+        if (list == null)
+        {
+            Debug.Log($"{label} is null");
+            return;
+        }
+
+        string output = $"LIST PRINT {label} ({list.Count}):\n" +
+            string.Join("\n", list.Select((item, index) => $"[{index}] => {item}"));
+
+        Debug.Log(output);
+    }
+
+
+    public static void PrintDictionary<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dictionary, string dictionaryName = "Dictionary")
+    {
+        string formattedOutput = $"KEYTOBULB {dictionaryName} ({dictionary.Count}):\n" +
+            string.Join("\n", dictionary.Select(kvp => $"[{kvp.Key}] => {kvp.Value}"));
+
+        Debug.Log(formattedOutput);
+    }
 }

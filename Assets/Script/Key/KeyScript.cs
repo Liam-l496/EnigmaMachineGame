@@ -58,7 +58,7 @@ public class KeyScript : MonoBehaviour
         bool keyInput = Input.GetKey(keyPress.ToLower());
         if (keyInput || mousePressingKey)
         {
-            print("KEY  PRESS");
+            // print("KEY  PRESS");
             Pressing();
             if (!pressing) KeyInputManagerScript.Instance.KeyPress(keyPress);
             pressing = true;

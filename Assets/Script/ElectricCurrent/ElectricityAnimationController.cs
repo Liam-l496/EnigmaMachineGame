@@ -45,6 +45,8 @@ public class ElectricityAnimationController : MonoBehaviour
 
     public SplineElectricityWire currentWireOn = null;
     public SplineElectricityWire currentWireOff = null;
+    public RopeElectricityWire currentRopeOn = null;
+    public RopeElectricityWire currentRopeOff = null;
     public bool stopCurrentFlow = false;
     public GameManagerScript gameManagerScript;
 
@@ -88,12 +90,11 @@ public class ElectricityAnimationController : MonoBehaviour
             return; 
         }
 
-        if (currentWireOn != null && !currentWireOn.IsOn) {
-            Debug.Log($"[{gameObject.name}] Update: Waiting for currentWireOn ({currentWireOn}) to complete turning ON. IsOn = {currentWireOn.IsOn}");
+        if ((currentWireOn != null && !currentWireOn.IsOn) || (currentRopeOn != null && !currentRopeOn.IsOn)) {
             return;
         }
 
-        Debug.Log($"[{gameObject.name}] Update: Step {wireIndex}/{wireAnimationOrderList.Count} -> Running animation: {wireAnimationOrderList[wireIndex]} (Target Index: {wireIndexList[wireIndex]})");
+        // Debug.Log($"[{gameObject.name}] Update: Step {wireIndex}/{wireAnimationOrderList.Count} -> Running animation: {wireAnimationOrderList[wireIndex]} (Target Index: {wireIndexList[wireIndex]})");
         runAnimation(wireAnimationOrderList[wireIndex], wireIndexList[wireIndex]);
         wireIndex++;
     }
@@ -115,6 +116,13 @@ public class ElectricityAnimationController : MonoBehaviour
         else if (nextAnimation == ElectricWireEnum.PlugIn)
         {
             currentWireOn = electricityController.PowerOnWirePlugBoardIn(wireAnimationIndex);
+        }
+        else if (nextAnimation == ElectricWireEnum.CablePluggedIn)
+        {
+            print("RUNNING ROPE ELECTRICITY");
+            currentRopeOn = gameManagerScript.PlugBoardObjectDictionary[wireAnimationIndex].StartElectricity(wireAnimationIndex);
+            currentWireOn = null;
+            return;
         }
         else if (nextAnimation == ElectricWireEnum.PlugOut)
         {
@@ -144,6 +152,7 @@ public class ElectricityAnimationController : MonoBehaviour
         {
             Debug.LogWarning($"[{gameObject.name}] runAnimation() -> Unhandled enum step: {nextAnimation}");
         }
+        currentRopeOn = null;
 
         Debug.Log($"[{gameObject.name}] runAnimation() complete. Assigned currentWireOn: {(currentWireOn != null ? currentWireOn.name : "NULL")}");
     }
@@ -188,6 +197,13 @@ public class ElectricityAnimationController : MonoBehaviour
         else if (nextAnimation == ElectricWireEnum.PlugIn)
         {
             currentWireOff = electricityController.PowerOffWirePlugBoardIn(wireAnimationIndex);
+        }
+        else if (nextAnimation == ElectricWireEnum.CablePluggedIn)
+        {
+            print("STOPPING ROPE ELECTRICITY");
+            currentRopeOn = gameManagerScript.PlugBoardObjectDictionary[wireAnimationIndex].StopElectricity();
+            currentWireOn = null;
+            return;
         }
         else if (nextAnimation == ElectricWireEnum.PlugOut)
         {
@@ -326,6 +342,9 @@ public class ElectricityAnimationController : MonoBehaviour
 
         currentWireOn = null;
         currentWireOff = null;
+
+        currentRopeOn = null;
+        currentRopeOff = null;
 
         stopCurrentFlow = false;
 

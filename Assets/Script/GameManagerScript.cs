@@ -229,6 +229,30 @@ public class GameManagerScript : MonoBehaviour
         PlugBoard[plug2Int] = plug1Int;
     }
 
+    public void ResetPlugBoard(char plug1, char plug2)
+    {
+        int plug1Int = plug1 - 'A';
+        int plug2Int = plug2 - 'A';
+        PlugBoard[plug1Int] = plug1Int;
+        PlugBoard[plug2Int] = plug2Int;
+    }
+
+    public void SetPlugBoardObjectDictionary(char plug1, char plug2, PlugBoardPlugMasterScript plug)
+    {
+        int plug1Int = plug1 - 'A';
+        int plug2Int = plug2 - 'A';
+        PlugBoardObjectDictionary[plug1Int] = plug;
+        PlugBoardObjectDictionary[plug2Int] = plug;
+    }
+
+    public void ResetPlugBoardObjectDictionary(char plug1, char plug2)
+    {
+        int plug1Int = plug1 - 'A';
+        int plug2Int = plug2 - 'A';
+        PlugBoardObjectDictionary.Remove(plug1Int);
+        PlugBoardObjectDictionary.Remove(plug2Int);
+    }
+
     public int GetPlugBoardCipher(char character)
     {
         int cipher = character - 'A';
@@ -238,14 +262,6 @@ public class GameManagerScript : MonoBehaviour
     public int GetPlugBoardCipher(int character)
     {
         return PlugBoard[character];
-    }
-
-    public void ResetPlugBoard(char plug1, char plug2)
-    {
-        int plug1Int = plug1 - 'A';
-        int plug2Int = plug2 - 'A';
-        PlugBoard[plug1Int] = plug1Int;
-        PlugBoard[plug2Int] = plug2Int;
     }
 
     public void AddNewEncryptedLetter(string keyPressed)
@@ -311,7 +327,11 @@ public class GameManagerScript : MonoBehaviour
         intList.Add(plainChar);
 
         int plugBoard1 = GetPlugBoardCipher(plainChar);
-        if (plugBoard1 != plainChar) {} // DO the rope animation
+        if (plugBoard1 != plainChar)
+        {
+            enumList.Add(ElectricWireEnum.CablePluggedIn);
+            intList.Add(plugBoard1);
+        } // DO the rope animation
         
         enumList.Add(ElectricWireEnum.PlugOut);
         intList.Add(plugBoard1);
@@ -354,7 +374,11 @@ public class GameManagerScript : MonoBehaviour
         intList.Add(pass7);
 
         int plugBoard2 = GetPlugBoardCipher(pass7);
-        if (plugBoard2 != pass7) {} // Add the rope animation
+        if (plugBoard2 != pass7)
+        {
+            enumList.Add(ElectricWireEnum.CablePluggedIn);
+            intList.Add(plugBoard2);
+        } // Add the rope animation
         enumList.Add(ElectricWireEnum.PlugOutReverse);
         intList.Add(plugBoard2);
 
@@ -366,6 +390,9 @@ public class GameManagerScript : MonoBehaviour
 
         enumList.Add(ElectricWireEnum.Bulb);
         intList.Add(plugBoard2);
+
+        enumList.Add(ElectricWireEnum.Battery);
+        intList.Add(6);
     
         return (enumList, intList);
     }
@@ -449,5 +476,7 @@ public class GameManagerScript : MonoBehaviour
     { 24, 24 }, // Y <-> Y
     { 25, 25 }  // Z <-> Z
 };
+
+public Dictionary<int, PlugBoardPlugMasterScript> PlugBoardObjectDictionary = new Dictionary<int, PlugBoardPlugMasterScript>();
 
 }

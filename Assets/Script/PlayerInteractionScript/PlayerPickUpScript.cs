@@ -71,7 +71,7 @@ public class PlayerPickUpScript : MonoBehaviour
     {
         if (inAnimation)
         {
-            print("IN ANIMATINO");
+            // print("IN ANIMATINO");
             ObjectAnimation(animationEndPosition);
         }
         else if (!heldObject) {
@@ -80,7 +80,7 @@ public class PlayerPickUpScript : MonoBehaviour
         }
         if (skipUpdate) 
         { 
-            print("SKIP UPDATE + " + skipUpdate);  
+            // print("SKIP UPDATE + " + skipUpdate);  
             return;
         }
         // print("WrongObjectClicked +  " + wrongObjectClicked + "       sameObjectClicked  + " + sameObjectClicked);
@@ -107,7 +107,7 @@ public class PlayerPickUpScript : MonoBehaviour
 
     public void ObjectAnimation(Vector3 endPosition)
     {
-        print("HELD OBJECT TRANSFORM + " + heldObjectTransform);
+        // print("HELD OBJECT TRANSFORM + " + heldObjectTransform);
         heldObjectTransform.position = Vector3.SmoothDamp(
             heldObjectTransform.position,
             endPosition,
@@ -166,7 +166,7 @@ public class PlayerPickUpScript : MonoBehaviour
         {
             return;
         }
-        print("PUTTING DOWN OBJECT");
+        // print("PUTTING DOWN OBJECT");
         heldObject.UpdatePickUpState(false);
         heldObject.isSelected = false;
         heldObject.runEndingScript = true;
