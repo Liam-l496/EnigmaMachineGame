@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +13,7 @@ public class RotorSwappingScript : MonoBehaviour
 
     private Interactable interactable;
 
-    [Header("Rotor Swapping Variables")]    
+    [Header("Rotor Swapping Variables")]
     public Transform RotorPositionLifted;
     public Transform RotorPositionSwappingTop;
     public Transform RotorPositionStationary;
@@ -23,11 +24,25 @@ public class RotorSwappingScript : MonoBehaviour
     [Header("Moving Speed")]
     [SerializeField] float transitionSpeed = 0.5f;
 
+    [Header("Dragging")]
+    [SerializeField] private float draggingSmoothTime = 0.04f;
+
+    private Camera mainCamera;
+    private Plane draggingPlane;
+
+    private Vector3 mouseOffset;
+    private Vector3 dragVelocity;
+
+    private bool draggingInitialised = false;
+
     void Start()
     {
         rotorMasterScript = GetComponent<RotorMasterScript>();
         print("rotorMasterScript swapping" + rotorMasterScript);
         interactable = GetComponent<Interactable>();
+
+        mainCamera = Camera.main;
+
         DisableRotorSwappingCollider();
     }
 
@@ -43,40 +58,108 @@ public class RotorSwappingScript : MonoBehaviour
             if (Input.GetMouseButtonDown(0) && rotorMasterScript.IsSelected)
             {
                 UpdateSelectedForSwapping(true);
-                mousePositionSwappingBefore = Input.mousePosition;
+
+                draggingInitialised = false;
             }
 
             if (Input.GetMouseButton(0) && selectedForSwapping)
             {
-                mousePositionSwappingAfter = Input.mousePosition;
+                // Initialise dragging after the lifting animation finishes.
+                if (!draggingInitialised)
+                {
+                    StartDragging();
+                }
 
-                float mouseDeltaX = (mousePositionSwappingAfter.x - mousePositionSwappingBefore.x) * 4f;
-
-                float targetX = transform.position.x - mouseDeltaX;
-
-                float minX = Mathf.Min(RotorBarrierLeft.position.x, RotorBarrierRight.position.x);
-                float maxX = Mathf.Max(RotorBarrierLeft.position.x, RotorBarrierRight.position.x);
-
-                float clampedX = Mathf.Clamp(targetX, minX, maxX);
-
-                Vector3 newPosition = new Vector3(clampedX, transform.position.y, transform.position.z);
-
-                transform.position = Vector3.Lerp(
-                    transform.position,
-                    newPosition,
-                    transitionSpeed * Time.deltaTime
-                );
-
-                mousePositionSwappingBefore = mousePositionSwappingAfter;
+                UpdateDragging();
             }
 
             if (!Input.GetMouseButton(0) && selectedForSwapping)
             {
                 rotorMasterScript.IsSelected = false;
+                interactable.isSelected = false;
+
+                draggingInitialised = false;
+                dragVelocity = Vector3.zero;
+
                 UpdateSelectedForSwapping(false);
             }
 
             return;
+        }
+    }
+
+    // --------------------------------------------------
+    // DRAGGING
+    // --------------------------------------------------
+
+    private void StartDragging()
+    {
+        draggingInitialised = true;
+
+        dragVelocity = Vector3.zero;
+
+        // Create a plane parallel to the camera
+        // at the rotor's current depth.
+        draggingPlane = new Plane(
+            mainCamera.transform.forward,
+            transform.position
+        );
+
+        // Get the mouse position in world space.
+        Ray mouseRay = mainCamera.ScreenPointToRay(
+            Input.mousePosition
+        );
+
+        if (draggingPlane.Raycast(mouseRay, out float distance))
+        {
+            Vector3 mouseWorldPosition = mouseRay.GetPoint(distance);
+
+            // Maintain the original distance between
+            // the mouse and the centre of the rotor.
+            mouseOffset = transform.position - mouseWorldPosition;
+        }
+    }
+
+    private void UpdateDragging()
+    {
+        Ray mouseRay = mainCamera.ScreenPointToRay(
+            Input.mousePosition
+        );
+
+        if (draggingPlane.Raycast(mouseRay, out float distance))
+        {
+            Vector3 mouseWorldPosition = mouseRay.GetPoint(distance);
+
+            Vector3 targetPosition = mouseWorldPosition + mouseOffset;
+
+            // Restrict movement to the X-axis.
+            float minX = Mathf.Min(
+                RotorBarrierLeft.position.x,
+                RotorBarrierRight.position.x
+            );
+
+            float maxX = Mathf.Max(
+                RotorBarrierLeft.position.x,
+                RotorBarrierRight.position.x
+            );
+
+            targetPosition.x = Mathf.Clamp(
+                targetPosition.x,
+                minX,
+                maxX
+            );
+
+            // Preserve the rotor's current Y and Z positions.
+            targetPosition.y = transform.position.y;
+            targetPosition.z = transform.position.z;
+
+            // Smoothly follow the mouse.
+            transform.position = Vector3.SmoothDamp(
+                transform.position,
+                targetPosition,
+                ref dragVelocity,
+                draggingSmoothTime
+            );
         }
     }
 
@@ -87,9 +170,11 @@ public class RotorSwappingScript : MonoBehaviour
             selectedForSwapping = false;
             return;
         }
+
         selectedForSwapping = newState;
+
         if (newState)
-        {   
+        {
             EnableRotorSwappingCollider();
             RotorSwappablePosition();
         }
@@ -139,6 +224,7 @@ public class RotorSwappingScript : MonoBehaviour
             rotorMasterScript.UpdateEndPosition(RotorPositionStationary);
             // rotorMasterScript.endAngle = rotorMasterScript.originalAngle;
         }
+
         rotorMasterScript.InAnimation = true;
     }
 
@@ -146,6 +232,7 @@ public class RotorSwappingScript : MonoBehaviour
     {
         rotorSwappingCollider.enabled = false;
     }
+
     public void EnableRotorSwappingCollider()
     {
         rotorSwappingCollider.enabled = true;

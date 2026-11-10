@@ -220,4 +220,19 @@ public class AnimationHandlerScript : MonoBehaviour
             virtualCamera.ActivateCameraOverall();
         }
     }
+
+    /// <summary>
+    /// Lamp Board 
+    /// </summary>
+    public void UpdateLampBoardState()
+    {
+        if (virtualCamera.cameraLampBoard.Priority <= virtualCamera.cameraBlackCoverFlap.Priority)
+        {
+            virtualCamera.ActivateCameraLampBoard();
+        }
+        else
+        {
+            virtualCamera.ActivateCameraBlackCoverFlap();
+        }
+    }
 }

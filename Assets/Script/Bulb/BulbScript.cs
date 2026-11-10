@@ -32,7 +32,7 @@ public class BulbScript : MonoBehaviour
     {
         interactable = GetComponent<Interactable>();
         lampBulbRenderer = glassBulb.GetComponent<Renderer>();
-        bulbTestingInteractable = bulbTestingObject.GetComponent<Interactable>();
+        if (bulbTestingObject) bulbTestingInteractable = bulbTestingObject.GetComponent<Interactable>();
         metalFilamentRenderer = metalFilament.GetComponent<Renderer>();
     
     }

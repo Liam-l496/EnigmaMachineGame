@@ -3401,7 +3401,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.001, y: 0.010000001, z: 0.010000001}
+  m_LocalScale: {x: 0.004, y: 0.010000001, z: 0.010000001}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5445971237786595695}
@@ -5953,7 +5953,7 @@ Rigidbody:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 3
 --- !u!114 &3503149329949472608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6063,6 +6063,7 @@ MonoBehaviour:
   RotorBarrierLeft: {fileID: 0}
   rotorSwappingCollider: {fileID: 8294889086350935765}
   transitionSpeed: 5
+  draggingSmoothTime: 0.04
 --- !u!114 &7646188360382595984
 MonoBehaviour:
   m_ObjectHideFlags: 0

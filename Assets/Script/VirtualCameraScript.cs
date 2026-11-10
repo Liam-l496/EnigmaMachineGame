@@ -15,6 +15,8 @@ public class VirtualCameraScript : MonoBehaviour
     public CinemachineVirtualCamera cameraPlugBoard;
     public CinemachineVirtualCamera cameraKeyBoard;
     public CinemachineVirtualCamera cameraRotor;
+    public CinemachineVirtualCamera cameraLampBoard;
+
 
 
 
@@ -40,6 +42,7 @@ public class VirtualCameraScript : MonoBehaviour
         cameraPlugBoard.Priority = CAMERA_DEACTIVE;
         cameraKeyBoard.Priority = CAMERA_DEACTIVE;
         cameraRotor.Priority = CAMERA_DEACTIVE;
+        cameraLampBoard.Priority = CAMERA_DEACTIVE;
         // DeactivateAllActions();
     }
 
@@ -94,4 +97,10 @@ public class VirtualCameraScript : MonoBehaviour
         DeactiveAllCamera();
         cameraRotor.Priority = CAMERA_ACTIVE;
     }    
+
+    public void ActivateCameraLampBoard()
+    {
+        DeactiveAllCamera();
+        cameraLampBoard.Priority = CAMERA_ACTIVE;
+    }
 }
