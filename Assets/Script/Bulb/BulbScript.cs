@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BulbScript : MonoBehaviour
@@ -27,6 +28,13 @@ public class BulbScript : MonoBehaviour
     public Interactable bulbTestingInteractable;
     public LampTestingScript lampTestingScript;
 
+    [Header("Bin Testing")]
+    public bool deleteBulb = false;
+    public BinScript binScript;
+
+    [Header("Bulb Position Indicator")]
+    public BulbPositionIndicator bulbPositionIndicator;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,13 +42,30 @@ public class BulbScript : MonoBehaviour
         lampBulbRenderer = glassBulb.GetComponent<Renderer>();
         if (bulbTestingObject) bulbTestingInteractable = bulbTestingObject.GetComponent<Interactable>();
         metalFilamentRenderer = metalFilament.GetComponent<Renderer>();
-    
     }
 
     // Update is called once per frame
     void Update()
     {
         if (!interactable.isSelected) return;
+
+        if (deleteBulb)
+        {
+            if (PlayerPickUpScript.Instance.inAnimation) return;
+            binScript.InstantiateLampBulb();
+            PlayerPickUpScript.Instance.skipUpdate = false;
+            PlayerPickUpScript.Instance.PutAnotherInteractableDown();
+            PlayerPickUpScript.Instance.PutDownObject();
+            PlayerPickUpScript.Instance.inAnimation = false;
+            
+            bulbTestingObject.SetActive(false);
+            deleteBulb = false;
+
+
+            bulbPositionIndicator.gameObject.SetActive(true);
+            gameObject.SetActive(false);
+            return;
+        }
 
         if (Input.GetMouseButtonDown(0)) {
             print("IN BULB CLICK + " + PlayerPickUpScript.Instance.skipUpdate);
@@ -62,29 +87,52 @@ public class BulbScript : MonoBehaviour
             PlayerPickUpScript.Instance.sameObjectClicked = false;
         }
 
-        if (PlayerPickUpScript.Instance.anotherInteractableClicked && !lampTestingScript)
+        if (PlayerPickUpScript.Instance.anotherInteractableClicked)
         {
-            LampTestingScript lampTesting = CheckAnotherObject();
-            if (!lampTesting) return;
-            print("Lamp Testing Cylinder Clicked");
-            lampTestingScript = lampTesting;
-            lampTestingScript.ClickedWithBulb(this);
+            LampTestingScript lampTesting = CheckAnotherObjectLamp();
+            BinScript binTesting = CheckAnotherObjectBin();
+            BulbPositionIndicator bulbPositionTest = CheckAnotherObjectBulbPosition();
+
+            if (!lampTesting && !binTesting && !bulbPositionTest)
+            {
+                PlayerPickUpScript.Instance.wrongObjectClicked = true;
+                return;
+            }
+            else if (lampTesting) {
+                lampTestingScript = lampTesting;
+                lampTestingScript.ClickedWithBulb(this);
+            }
+            else if (binTesting)
+            {
+                binTesting.MoveLightBulb();
+                binScript = binTesting;
+                BulbManager.Instance.AddBulb(this, bulbPositionIndicator);
+                deleteBulb = true;
+            }
+            else if (bulbPositionTest) 
+            {
+                bulbPositionTest.MoveLightBulb(gameObject);
+                
+            }
+
             PlayerPickUpScript.Instance.skipUpdate = true;
         }
 
-        bulbTestingInteractable.EnableOutline();
+
+
+        if (bulbTestingInteractable) bulbTestingInteractable.EnableOutline();
     }
 
     void LateUpdate()
     {
         if (interactable.runInitialScript)
         {
-            bulbTestingObject.SetActive(true);
+            if (bulbTestingObject) bulbTestingObject.SetActive(true);
             interactable.runInitialScript = false;
         }
         else if (interactable.runEndingScript)
         {
-            bulbTestingObject.SetActive(false);
+            if (bulbTestingObject) bulbTestingObject.SetActive(false);
             interactable.runEndingScript = false;
             lightOn = false;
             UpdateMaterial();
@@ -111,14 +159,21 @@ public class BulbScript : MonoBehaviour
         }
     }
 
-    public LampTestingScript CheckAnotherObject()
+    public LampTestingScript CheckAnotherObjectLamp()
     {
         LampTestingScript lampTesting = PlayerPickUpScript.Instance.anotherInteractableClicked.GetComponent<LampTestingScript>();
-        if (!lampTesting)
-        {
-            PlayerPickUpScript.Instance.wrongObjectClicked = true;
-        }
         return lampTesting;
+    }
+
+    public BinScript CheckAnotherObjectBin()
+    {
+        BinScript binTesting = PlayerPickUpScript.Instance.anotherInteractableClicked.GetComponent<BinScript>();
+        return binTesting;
+    }
+    public BulbPositionIndicator CheckAnotherObjectBulbPosition()
+    {
+        BulbPositionIndicator bulbTesting = PlayerPickUpScript.Instance.anotherInteractableClicked.GetComponent<BulbPositionIndicator>();
+        return bulbTesting;
     }
 
     public void LightOn()

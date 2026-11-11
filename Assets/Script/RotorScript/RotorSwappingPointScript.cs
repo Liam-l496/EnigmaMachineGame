@@ -13,7 +13,7 @@ public class RotorSwappingPointScript : MonoBehaviour
         gameManagerScript = GameManagerScript.Instance;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         // print($"HIT SOMETHIGN {swappingIndex}");
         if(other.CompareTag("RotorSwappingPoint"))
@@ -26,7 +26,8 @@ public class RotorSwappingPointScript : MonoBehaviour
             // print("GETTING ROTOR OBJECT");
             RotorSwappingScript adjacentRotor = gameManagerScript.ReturnRotor(swappingIndex).GetComponent<RotorSwappingScript>();
             // print("NOW SWAPPING ROTOR OBJECT");
-            SwapPosition(swappingRotor, adjacentRotor);
+            // SwapPosition(swappingRotor, adjacentRotor);
+            RotorSwappingControllerScript.Instance.CheckSwapping(swappingRotor, adjacentRotor);
         }
     }
 

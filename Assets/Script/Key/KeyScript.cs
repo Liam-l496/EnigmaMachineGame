@@ -91,43 +91,8 @@ public class KeyScript : MonoBehaviour
         mousePressingKey = false;
     }
 
-    // public void LampSwitch(bool keyPress)
-    // {
-    //     if (!GameManagerScript.Instance.powerOn)
-    //     // If power off
-    //     {
-    //         if (lightOn)
-    //         // If light is on when power off, then turn it off
-    //         {
-    //             LampOffPlane();
-    //         }
-    //         return;
-    //     }
-    //     else if (keyPress || mousePressingKey)
-    //     {
-    //         // if key pressed while power on
-    //         if (!lightOn)
-    //         {
-    //             // if black flap is down, then light up plane
-    //             if (!blackFlapUp) LampOnPlane();
-    //             // LampOnBulb();
-    //         }
-    //     }
-    //     else
-    //     {
-    //         // if nothing pressed
-    //         if (lightOn)
-    //         {
-    //             // If light still on, then turn it off
-    //             LampOffPlane();
-    //             // LampOffBulb();
-    //         }
-    //     }
-    // }
-
-
     public void LampOn()
-    {   if (!GameManagerScript.Instance.powerOn) return;
+    {   if (!GameManagerScript.Instance.powerOn || lightBulbScript.broken) return;
         LampOnPlane();
         LampOnBulb();
     }
@@ -140,34 +105,34 @@ public class KeyScript : MonoBehaviour
     }
 
 
-    public void LampSwitch()
-    {
-        if (!GameManagerScript.Instance.powerOn)
-        // If power off
-        {
-            if (lightOn)
-            // If light is on when power off, then turn it off
-            {
-                LampOffPlane();
-                LampOffBulb();
-            }
-            return;
-        }
-            // if key pressed while power on
-        if (!lightOn)
-        {
-            // if black flap is down, then light up plane
-            if (!blackFlapUp) LampOnPlane();
-            LampOnBulb();
-        }
-        // if nothing pressed
-        if (lightOn)
-        {
-            // If light still on, then turn it off
-            LampOffPlane();
-            LampOffBulb();
-        }
-    }
+    // public void LampSwitch()
+    // {
+    //     if (!GameManagerScript.Instance.powerOn)
+    //     // If power off
+    //     {
+    //         if (lightOn)
+    //         // If light is on when power off, then turn it off
+    //         {
+    //             LampOffPlane();
+    //             LampOffBulb();
+    //         }
+    //         return;
+    //     }
+    //         // if key pressed while power on
+    //     if (!lightOn)
+    //     {
+    //         // if black flap is down, then light up plane
+    //         if (!blackFlapUp) LampOnPlane();
+    //         LampOnBulb();
+    //     }
+    //     // if nothing pressed
+    //     if (lightOn)
+    //     {
+    //         // If light still on, then turn it off
+    //         LampOffPlane();
+    //         LampOffBulb();
+    //     }
+    // }
 
     public void LampOnPlane()
     {

@@ -211,6 +211,18 @@ public class PlayerPickUpScript : MonoBehaviour
         inAnimation = true;
     }
 
+    public void UpdateEndPosition(Vector3 newPosition)
+    {
+        animationEndPosition = newPosition;
+        inAnimation = true;
+    }
+
+    public void UpdateEndRotation(Quaternion newRotation)
+    {
+        originalHeldRotation = newRotation;
+    }
+
+
     public void PutAnotherInteractableDown()
     {
         somethingElseClicked = false;

@@ -33,7 +33,7 @@ public class RotorSwappingScript : MonoBehaviour
     private Vector3 mouseOffset;
     private Vector3 dragVelocity;
 
-    private bool draggingInitialised = false;
+    public bool draggingInitialised = false;
 
     void Start()
     {
@@ -48,7 +48,20 @@ public class RotorSwappingScript : MonoBehaviour
 
     void LateUpdate()
     {
-        if (rotorMasterScript.Transitioning || rotorMasterScript.InAnimation)
+        if (RotorSwappingControllerScript.Instance.dropEverything || (!rotorMasterScript.ReflectorHolding && !Input.GetMouseButton(0) && selectedForSwapping))
+            {
+                rotorMasterScript.IsSelected = false;
+                interactable.isSelected = false;
+
+                draggingInitialised = false;
+                dragVelocity = Vector3.zero;
+
+                UpdateSelectedForSwapping(false);
+            }
+
+        if (rotorMasterScript.Transitioning 
+        || rotorMasterScript.InAnimation 
+        || (RotorSwappingControllerScript.Instance.currentlyHolding && !rotorMasterScript.IsSelected))
         {
             return;
         }
