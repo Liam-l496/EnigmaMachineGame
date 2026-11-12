@@ -23,12 +23,14 @@ public class BulbManager : MonoBehaviour
 
     public void AddBulb(BulbScript newBulb, BulbPositionIndicator newBulbIndi)
     {
+        if (newBulb == null || newBulbIndi == null) return;
         BulbScriptList.Add(newBulb);
         BulbsPositionIndicatorList.Add(newBulbIndi);
     }
 
     public void RemoveBulb(BulbScript newBulb, BulbPositionIndicator newBulbIndi)
     {
+        if (newBulb == null || newBulbIndi == null) return;
         BulbScriptList.Remove(newBulb);
         BulbsPositionIndicatorList.Remove(newBulbIndi);
     }

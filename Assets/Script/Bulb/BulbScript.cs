@@ -58,11 +58,11 @@ public class BulbScript : MonoBehaviour
             PlayerPickUpScript.Instance.PutDownObject();
             PlayerPickUpScript.Instance.inAnimation = false;
             
-            bulbTestingObject.SetActive(false);
+            if (bulbTestingObject) bulbTestingObject.SetActive(false);
             deleteBulb = false;
 
 
-            bulbPositionIndicator.gameObject.SetActive(true);
+            if (bulbPositionIndicator) bulbPositionIndicator.gameObject.SetActive(true);
             gameObject.SetActive(false);
             return;
         }

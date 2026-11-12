@@ -146,7 +146,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, playerReach))
         {
-            // Debug.Log($"Ray hit object: {hit.collider.gameObject.name} with Tag: {hit.collider.tag}");
+            Debug.Log($"Ray hit object: {hit.collider.gameObject.name} with Tag: {hit.collider.tag}");
 
             if (hit.collider.CompareTag("Interactable"))
             {

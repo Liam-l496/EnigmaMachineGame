@@ -176,19 +176,38 @@ public class PlayerPickUpScript : MonoBehaviour
         wrongObjectClicked = false;
     }
 
+    // public void RotateObject()
+    // {
+    //     if (heldObject == null)
+    //     {
+    //         return;
+    //     }
+    //     float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
+    //     float YaxisRotation = -Input.GetAxis("Mouse Y") * rotationSensitivity;
+    //     //rotate the object depending on mouse X-Y Axis
+    //     heldObjectTransform.Rotate(Vector3.forward, XaxisRotation, Space.World);
+    //     heldObjectTransform.Rotate(Vector3.right, YaxisRotation, Space.World);
+    // }
+
+
     public void RotateObject()
     {
-        if (heldObject == null)
+        if (heldObject == null || Camera.main == null)
         {
             return;
         }
-        float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
-        float YaxisRotation = -Input.GetAxis("Mouse Y") * rotationSensitivity;
-        //rotate the object depending on mouse X-Y Axis
-        heldObjectTransform.Rotate(Vector3.forward, XaxisRotation, Space.World);
-        heldObjectTransform.Rotate(Vector3.right, YaxisRotation, Space.World);
-    }
 
+        float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
+        float YaxisRotation = Input.GetAxis("Mouse Y") * rotationSensitivity;
+
+        // Get camera relative axes
+        Vector3 cameraUp = Camera.main.transform.up;
+        Vector3 cameraRight = Camera.main.transform.right;
+
+        // Rotate around the camera's Up and Right vectors
+        heldObjectTransform.Rotate(cameraUp, -XaxisRotation, Space.World);
+        heldObjectTransform.Rotate(cameraRight, YaxisRotation, Space.World);
+    }
 
     public void ClickSameObject()
     {
