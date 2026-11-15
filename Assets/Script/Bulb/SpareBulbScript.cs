@@ -20,7 +20,6 @@ public class SpareBulbScript : MonoBehaviour
         currentlyHeld = interactable.isSelected;
         if (!interactable.isSelected) {
             if (bulbHeld) SpareBulbReleased();
-            print("DROPPED SPARE BULB");
             return;
         }
         if (!bulbHeld) SpareBulbHeld();

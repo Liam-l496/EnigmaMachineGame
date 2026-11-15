@@ -201,20 +201,37 @@ public class RopeElectricityWire : MonoBehaviour
 
     private void OnValidate()
     {
+        // wireRadius = Mathf.Max(0.001f, wireRadius);
+
+        // radialResolution = Mathf.Clamp(
+        //     radialResolution, 3, 32);
+
+        // segmentsPerRopePoint = Mathf.Max(
+        //     1, segmentsPerRopePoint);
+
+        // if (!isActiveAndEnabled)
+        //     return;
+
+        // if (meshFilter == null)
+        //     Initialise();
+
+        // geometryInitialised = false;
+
+        // if (!Application.isPlaying)
+        // {
+        //     CreateMesh();
+        //     UpdateRopeMesh();
+        // }
+
+        // UpdateMaterialProperties();
         wireRadius = Mathf.Max(0.001f, wireRadius);
-
-        radialResolution = Mathf.Clamp(
-            radialResolution, 3, 32);
-
-        segmentsPerRopePoint = Mathf.Max(
-            1, segmentsPerRopePoint);
+        radialResolution = Mathf.Clamp(radialResolution, 3, 32);
+        segmentsPerRopePoint = Mathf.Max(1, segmentsPerRopePoint);
 
         if (!isActiveAndEnabled)
             return;
 
-        if (meshFilter == null)
-            Initialise();
-
+        Initialise();
         geometryInitialised = false;
 
         if (!Application.isPlaying)

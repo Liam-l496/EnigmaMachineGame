@@ -21,6 +21,10 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("PlayerPickUpScripts")]
     [SerializeField] PlayerPickUpScript playerPickUpScript;
+
+    [Header("Raycast Settings")]
+    [SerializeField] private LayerMask raycastLayers;
+    [SerializeField] private LayerMask interactableLayers;
     
     private void Awake()
     {
@@ -137,6 +141,26 @@ public class PlayerInteraction : MonoBehaviour
         return null;
     }
 
+    // private Interactable CurrentInteractableSelected()
+    // {
+    //     Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+    //     // Draws a 10-unit line in the Scene view while running
+    //     Debug.DrawRay(ray.origin, ray.direction * playerReach, Color.red);
+
+    //     if (Physics.Raycast(ray, out RaycastHit hit, playerReach))
+    //     {
+    //         Debug.Log($"Ray hit object: {hit.collider.gameObject.name} with Tag: {hit.collider.tag}");
+
+    //         if (hit.collider.CompareTag("Interactable"))
+    //         {
+    //             Interactable newInteractable = hit.collider.GetComponent<Interactable>();
+    //             return newInteractable;
+    //         }
+    //     }
+    //     return null;
+    // } 
+
     private Interactable CurrentInteractableSelected()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -144,16 +168,19 @@ public class PlayerInteraction : MonoBehaviour
         // Draws a 10-unit line in the Scene view while running
         Debug.DrawRay(ray.origin, ray.direction * playerReach, Color.red);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, playerReach))
+        if (Physics.Raycast(ray, out RaycastHit hit, playerReach, raycastLayers))
         {
-            Debug.Log($"Ray hit object: {hit.collider.gameObject.name} with Tag: {hit.collider.tag}");
+            // Debug.Log($"Ray hit object: {hit.collider.gameObject.name}");
 
-            if (hit.collider.CompareTag("Interactable"))
+            // Check whether the first object hit belongs to an interactable layer
+            if (((1 << hit.collider.gameObject.layer) & interactableLayers) != 0)
             {
                 Interactable newInteractable = hit.collider.GetComponent<Interactable>();
                 return newInteractable;
             }
         }
+
         return null;
-    } 
+    }
+
 }

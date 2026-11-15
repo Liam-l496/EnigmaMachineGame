@@ -8,6 +8,8 @@ using System;
 public class AnimationHandlerScript : MonoBehaviour
 {
 
+    public static AnimationHandlerScript Instance;
+
     [Header("Cinemachine")]
     [SerializeField] CinemachineBrain brain;
     public static bool IsBlending { get; private set; }
@@ -50,6 +52,17 @@ public class AnimationHandlerScript : MonoBehaviour
     // [SerializeField] Animator animatorActuatorBar;
     [SerializeField] BoxCollider colliderKeyBoardHolder;
     // private int hashActuatorBar;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
 
     void Start()
@@ -141,6 +154,12 @@ public class AnimationHandlerScript : MonoBehaviour
             virtualCamera.ActivateCameraOverall();
         }
     }
+
+    public bool ReturnBlackCoverFlapState()
+    {
+        return animatorBlackFlapCover.GetBool(hashBlackFlapCover);
+    }
+
     public void UpdatePowerOnState()
     {
         animatorBlackFlapCover.SetBool(hashPowerLever, !animatorBlackFlapCover.GetBool(hashPowerLever));

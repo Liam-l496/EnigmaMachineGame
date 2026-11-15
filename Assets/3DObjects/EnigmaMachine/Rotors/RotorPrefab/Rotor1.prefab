@@ -6064,6 +6064,7 @@ MonoBehaviour:
   rotorSwappingCollider: {fileID: 8294889086350935765}
   transitionSpeed: 5
   draggingSmoothTime: 0.04
+  draggingInitialised: 0
 --- !u!114 &7646188360382595984
 MonoBehaviour:
   m_ObjectHideFlags: 0

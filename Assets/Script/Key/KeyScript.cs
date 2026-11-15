@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class KeyScript : MonoBehaviour
@@ -93,7 +89,7 @@ public class KeyScript : MonoBehaviour
 
     public void LampOn()
     {   if (!GameManagerScript.Instance.powerOn || lightBulbScript.broken) return;
-        LampOnPlane();
+        if (!AnimationHandlerScript.Instance.ReturnBlackCoverFlapState())LampOnPlane();
         LampOnBulb();
     }
 
